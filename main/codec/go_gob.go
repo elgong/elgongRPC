@@ -2,12 +2,13 @@
 package main
 
 import (
-"bytes"
-"encoding/gob"
-"fmt"
+	"bytes"
+	"encoding/gob"
+	"fmt"
 	"io"
 )
 
+// MsgData 数据
 type MsgData struct {
 	X, Y, Z int
 	Name string
@@ -37,6 +38,7 @@ func main() {
 	}
 }
 
+// senMsg 编码数据
 func senMsg( msg MsgData, w io.Writer)error {
 	fmt.Print("开始执行编码（发送端）")
 
@@ -47,6 +49,8 @@ func senMsg( msg MsgData, w io.Writer)error {
 	fmt.Println("传递的编码数据为：", w)
 	return  err
 }
+
+// revMsg 解码数据
 func revMsg(rev MsgData, r io.Reader)error {
 	dec:=gob.NewDecoder(r)
 	err:= dec.Decode(&rev) //传递参数必须为 地址
