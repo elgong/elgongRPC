@@ -23,4 +23,13 @@
 - enc := gob.NewEncoder(&buf)   // 创建一个解码器，并指定缓存位置
 - err := enc.Encode(&msg)       // 把序列解码为 msg
 	
+#### 特别注意的点
+1. 编码的数据中有空接口类型，传递时赋值的空接口为：基本类型（int、float、string）、切片时，可以不进行注册。
+2. 编码的数据中有空接口类型，传递时赋值的空接口为：map、struct时，必须进行注册。
 
+```go
+gob.Register(map[int]string{}) //TODO：进行了注册
+gob.Register(Msg{}) //TODO：进行了注册
+```
+
+## net包的基本使用
