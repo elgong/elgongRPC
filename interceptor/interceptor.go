@@ -35,7 +35,7 @@ func (i Interceptors) GetInterceptors(ctx context.Context, serviceName string, m
 }
 
 func (i *Interceptors) Register(interceptor Interceptor){
-	fmt.Println("注册了假的插件")
+	fmt.Println("注册了插件")
 
 	if interceptor == nil {
 		return
