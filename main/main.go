@@ -1,8 +1,27 @@
 package main
 
-import "github.com/elgong/elgongRPC/plugin_centre"
+import (
+	"context"
+	"fmt"
+	"github.com/elgong/elgongRPC/interceptor"
+)
+func call (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error {
 
+	fmt.Println("函数调用了")
+	return nil
+}
+
+
+func in (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, callFunc interceptor.CallFunc) error {
+
+	fmt.Println("之前执行哦")
+	call(ctx, serviceName, methodName, reqBody, rspBody)
+	return nil
+}
 func main() {
-	plugin_centre.Plugins.Register()
+
+	interceptor.Interceptorss.Register(in)
+
+	_ = interceptor.Interceptorss.GetInterceptors(context.Background(), "123", "123", "123", "123", call)
 	
 }
