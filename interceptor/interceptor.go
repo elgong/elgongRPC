@@ -28,24 +28,39 @@ func (i Interceptors) GetInterceptors(ctx context.Context, serviceName string, m
 		// 多个拦截器时， 需要借助递归来实现
 		return func(ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error {
 
+			var index = 0
 
-			return nil
+			return i.getFirst(index, ctx, serviceName, methodName, reqBody, rspBody, callFunc)
+			// return nil
 		}(ctx, serviceName, methodName, reqBody, rspBody)
 	}
 }
 
-func (i *Interceptors) Register(interceptor Interceptor){
+func (i Interceptors)getFirst(index int, ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, callFunc CallFunc) error{
+
+	if len(i) <= index {
+		return callFunc(ctx, serviceName, methodName, reqBody, rspBody)
+	}
+
+	return i.getFirst(index + 1, ctx, serviceName, methodName, reqBody, rspBody, callFunc)
+}
+
+func (i Interceptors) Register(interceptor Interceptor){
 	fmt.Println("注册了插件")
 
 	if interceptor == nil {
 		return
 	}
-	 *i = append(*i, interceptor)
+	 i = append(i, interceptor)
+
+	 fmt.Println(len(i))
 }
 
-var Interceptorss Interceptors
+
+
+var Interceptorss *Interceptors
 func init(){
-	Interceptorss = Interceptors{}
+	Interceptorss = &Interceptors{}
 	Interceptorss.Register(nil)
 }
 

@@ -21,6 +21,9 @@ func in (ctx context.Context, serviceName string, methodName string, reqBody int
 func main() {
 
 	interceptor.Interceptorss.Register(in)
+	interceptor.Interceptorss.Register(in)
+
+	fmt.Println(len(*interceptor.Interceptorss))
 
 	_ = interceptor.Interceptorss.GetInterceptors(context.Background(), "123", "123", "123", "123", call)
 	
