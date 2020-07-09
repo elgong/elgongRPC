@@ -19,29 +19,29 @@ type Quotient struct {
 
 
 const(
-	tcpAddr = "127.0.0.1:8080"
+	tcpAddr = "127.0.0.1:20000"
 	httpAddr = "127.0.0.1:8081"
 )
 
 func main() {
 
 	// 连接到一个HTTP RPC服务
-	client, err := rpc.DialHTTP("tcp", httpAddr)
-	if err != nil {
-		log.Fatal("dialing:", err)
-	}
+	//client, err := rpc.DialHTTP("tcp", httpAddr)
+	//if err != nil {
+	//	log.Fatal("dialing:", err)
+	//}
 
 	// Synchronous call
 	// 入参
 	args := &Args{7, 8}
 	// 返回参数
-	var reply int
-
-	err = client.Call("Arith.Multiply", args, &reply)
-	if err != nil {
-		log.Fatal("arith error:", err)
-	}
-	fmt.Printf("Arith: %d*%d=%d\n", args.A, args.B, reply)
+	//var reply int
+	//
+	//err = client.Call("Arith.Multiply", args, &reply)
+	//if err != nil {
+	//	log.Fatal("arith error:", err)
+	//}
+	//fmt.Printf("Arith: %d*%d=%d\n", args.A, args.B, reply)
 
 	// 连接到一个RPC服务
 	clientTCP, err := rpc.Dial("tcp", tcpAddr)
