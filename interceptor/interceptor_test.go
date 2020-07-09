@@ -13,7 +13,7 @@ func call (ctx context.Context, serviceName string, methodName string, reqBody i
 }
 
 
-func in (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, callFunc CallFunc) error {
+func in (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, callFunc CallFunc) CallFunc {
 
 	fmt.Println("函数之前拦截啦")
 	call(ctx, serviceName, methodName, reqBody, rspBody)
@@ -22,7 +22,7 @@ func in (ctx context.Context, serviceName string, methodName string, reqBody int
 func TestUnitInterceptors(t *testing.T) {
 
 	Interceptorss.Register(in)
-	// Interceptorss.Register(in)
+	Interceptorss.Register(in)
 
 	_ = Interceptorss.GetInterceptors(context.Background(), "123", "123", "123", "123", call)
 

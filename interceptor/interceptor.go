@@ -22,38 +22,42 @@ func (i Interceptors) GetInterceptors(ctx context.Context, serviceName string, m
 		if len(i) == 0 {
 			return callFunc(ctx, serviceName, methodName, reqBody, rspBody)
 		}
+		fmt.Println("------------")
 		// 只有一个拦截器
 		return i[0](ctx, serviceName, methodName, reqBody, rspBody, callFunc)
 	} else {
 		// 多个拦截器时， 需要借助递归来实现
-		return func(ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error {
+		return func(ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error{
 
 			var index = 0
 
-			return i.getFirst(index, ctx, serviceName, methodName, reqBody, rspBody, callFunc)
+			return getFirst(i, index, ctx, serviceName, methodName, reqBody, rspBody, callFunc)(ctx, serviceName, methodName, reqBody, rspBody)
 			// return nil
 		}(ctx, serviceName, methodName, reqBody, rspBody)
 	}
+
+
 }
 
-func (i Interceptors)getFirst(index int, ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, callFunc CallFunc) error{
+func getFirst(i Interceptors, index int, ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, callFunc CallFunc) CallFunc{
 
 	if len(i) <= index {
-		return callFunc(ctx, serviceName, methodName, reqBody, rspBody)
+		return callFunc
 	}
+	//return callFunc
 
-	return i.getFirst(index + 1, ctx, serviceName, methodName, reqBody, rspBody, callFunc)
+	return i[0](ctx, serviceName, methodName, reqBody, rspBody, getFirst(i, index + 1, ctx, serviceName, methodName, reqBody, rspBody, callFunc))
 }
 
-func (i Interceptors) Register(interceptor Interceptor){
+func (i *Interceptors) Register(interceptor Interceptor){
 	fmt.Println("注册了插件")
 
 	if interceptor == nil {
 		return
 	}
-	 i = append(i, interceptor)
+	 *i = append(*i, interceptor)
 
-	 fmt.Println(len(i))
+	// fmt.Println(len(i))
 }
 
 
