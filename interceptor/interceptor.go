@@ -10,7 +10,7 @@ type CallFunc func(ctx context.Context, serviceName string, methodName string, r
 
 
 // 拦截器
-type Interceptor func(ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, call CallFunc) error
+type Interceptor func(ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, call CallFunc)
 
 // 定义一个拦截器数组类型
 type Interceptors []Interceptor

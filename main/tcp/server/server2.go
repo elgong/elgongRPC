@@ -7,7 +7,7 @@ import (
 
 func main() {
 	//1.建立监听端口
-	listen, err := net.Listen("tcp", "127.0.0.1:8088")
+	listen, err := net.Listen("tcp", "127.0.0.1:8004")
 	if err != nil {
 		fmt.Println("listen failed, err:", err)
 		return
@@ -18,6 +18,7 @@ func main() {
 	for {
 		//2.接收客户端的链接
 		conn, err := listen.Accept()
+		fmt.Println("11111111111111111111")
 		if err != nil {
 			fmt.Printf("accept failed, err:%v\n", err)
 			continue
@@ -27,7 +28,6 @@ func main() {
 	}
 }
 
-//处理请求，类型就是net.Conn
 func process(conn net.Conn) {
 
 	//处理结束后关闭链接
@@ -43,6 +43,7 @@ func process(conn net.Conn) {
 	}
 
 }
+
 
 
 
