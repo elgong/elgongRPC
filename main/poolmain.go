@@ -41,7 +41,7 @@ func main(){
 
 
 
-		time.Sleep(300)
+		time.Sleep(300000)
 		// fmt.Println("完成")
 	}
 

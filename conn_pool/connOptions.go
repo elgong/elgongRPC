@@ -1,20 +1,17 @@
 package conn_pool
 
-import (
-	"time"
-)
-
 // ConnOptions 连接池参数结构体
 type ConnOptions struct {
 	initialCap  int
 	maxCap      int
 	maxIdle     int
-	idletime    time.Duration
-	maxLifetime time.Duration
+	//idletime    time.Duration
+	//maxLifetime time.Duration
 
 	// 超时重连
-	failReconnect bool
-	failReconnectSecond int
+	failReconnect bool  // 是否掉线重连
+	failReconnectSecond int  // 重连等待时间
+	failReconnectTime int    // 重连次数
 }
 
 // defaultConnOptions 默认参数
@@ -22,10 +19,11 @@ var defaultConnOptions = ConnOptions{
 	initialCap:  10,
 	maxCap:    10,
 	maxIdle:   10,
-	idletime:  1,
-	maxLifetime: 2,
+	//idletime:  1,
+	//maxLifetime: 2,
 	failReconnect: true,
 	failReconnectSecond: 5,
+	failReconnectTime: 1,
 }
 
 //

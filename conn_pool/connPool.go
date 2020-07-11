@@ -6,9 +6,8 @@ import (
 	"sync"
 	"time"
 )
-
+// Pool 统一管理的连接池
 var Pool = Pools{}
-
 
 // pool 连接池接口
 type pool interface {
@@ -16,7 +15,7 @@ type pool interface {
 	Close() error
 }
 
-//
+// Pools 统一管理的连接池结构体
 type Pools struct {
 	poolMap sync.Map
 }
@@ -55,25 +54,23 @@ func (p *Pools) Close(){
 
 // connPool 单ip 的连接池
 type connPool struct {
-
-	connStack    *connDeque
+	// 参数配置
 	initialCap  int
 	maxCap      int
 	maxIdle     int
-	idletime    time.Duration
-	maxLifetime time.Duration
-	cleanerCh   chan struct{}
-	failReconnect bool  // 超时重连参数
-	failReconnectSecond int
+	//idletime    time.Duration
+	//maxLifetime time.Duration
 
-	factory func() (net.Conn, error)
+	// 超时重连
+	failReconnect bool  // 是否掉线重连
+	failReconnectSecond int  // 重连等待时间
+	failReconnectTime int    // 重连次数
+
+	connStack    *connDeque
 }
 
-//func (c *connPool) get(address string) *connInPool{
-//
-//}
-
 // 创建单ip连接池
+// 正常情况下，应该不会遇到多个并发建立多个池子冲突的情况
 func NewConnPool(address string, opts...ModifyConnOption) (connPool, error){
 	// opt 默认参数
 	var opt = defaultConnOptions
@@ -86,12 +83,11 @@ func NewConnPool(address string, opts...ModifyConnOption) (connPool, error){
 	// 创建单ip连接池
 	connPoo := connPool{
 		initialCap: opt.initialCap,
-		maxCap: opt.maxCap,
-		maxIdle: opt.maxIdle,
-		failReconnect: opt.failReconnect,
-		failReconnectSecond: opt.failReconnectSecond,
-		//idletime: opt.idletime,
-		//maxLifetime: nil,
+			maxCap: opt.maxCap,
+			maxIdle: opt.maxIdle,
+			failReconnect: opt.failReconnect,
+			failReconnectSecond: opt.failReconnectSecond,
+			failReconnectTime: opt.failReconnectTime,
 	}
 
 	// 创建连接栈 + 一个连接
@@ -115,7 +111,7 @@ type connDeque struct {
 	top     *connInPool
 	bottom  *connInPool  // 底永远为nil
 	lock    sync.Mutex
-	size    int32
+	size    int
 	address string
 
 	cp *connPool
@@ -169,7 +165,7 @@ func (c *connDeque) pop() *connInPool{
 
 }
 
-func (c *connDeque) getSize() int32 {
+func (c *connDeque) getSize() int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -191,6 +187,10 @@ type connInPool struct {
 
 // putBack 放回池子
 func (c *connInPool) PutBack(){
+
+	if c.cp.connStack.size >= c.cp.maxCap {
+		c.Conn.Close()
+	}
 	// 如果连接失效 && 支持超时重连
 	// 开启单独线程处理
 	if !c.isLive  {
@@ -199,7 +199,8 @@ func (c *connInPool) PutBack(){
 			go c.reconnect()
 			return
 		}
-		// 不支持的话，丢点
+		// 不支持的话，断开连接
+		c.Conn.Close()
 		return
 	}
 
@@ -207,6 +208,7 @@ func (c *connInPool) PutBack(){
 	c.cp.connStack.push(*c)
 }
 
+// SetDead 发现连接失效时，修改连接状态，在putback 放回是统一处理
 func (c *connInPool) SetDead(){
 	c.isLive = false
 }
@@ -215,12 +217,15 @@ func (c *connInPool) SetDead(){
 func (c *connInPool) reconnect(){
 	var conn net.Conn
 	var err error
-	for i := 1; i<5;i++{
+	for i := 1; i<c.cp.failReconnectTime;i++{
 
 		conn, err = net.DialTimeout("tcp", c.address, time.Second * time.Duration(c.cp.failReconnectSecond))
 		time.Sleep(time.Duration(time.Second))
+		// 连接成功后，直接退出
+		if err == nil {
+			break
+		}
 	}
-
 
 	if err != nil {
 		return
