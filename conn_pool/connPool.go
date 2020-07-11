@@ -1,6 +1,7 @@
 package conn_pool
 
 import (
+	"errors"
 	"net"
 	"sync"
 	"time"
@@ -37,7 +38,12 @@ func (p *Pools) GetConn(address string) (*connInPool, error){
 	connPoo, isOk := p.poolMap.Load(address)
 	// 获取到连接
 	if isOk  {
-		return connPoo.(connPool).connStack.pop(), nil
+		connInpool := connPoo.(connPool).connStack.pop()
+		// 如果为空？ 要新建啊
+		if connInpool == nil{
+			return nil, errors.New("无连接")
+		}
+		return connInpool, nil
 	}
 
 	return nil, nil
@@ -57,6 +63,8 @@ type connPool struct {
 	idletime    time.Duration
 	maxLifetime time.Duration
 	cleanerCh   chan struct{}
+	failReconnect bool  // 超时重连参数
+	failReconnectSecond int
 
 	factory func() (net.Conn, error)
 }
@@ -80,12 +88,14 @@ func NewConnPool(address string, opts...ModifyConnOption) (connPool, error){
 		initialCap: opt.initialCap,
 		maxCap: opt.maxCap,
 		maxIdle: opt.maxIdle,
+		failReconnect: opt.failReconnect,
+		failReconnectSecond: opt.failReconnectSecond,
 		//idletime: opt.idletime,
 		//maxLifetime: nil,
 	}
 
 	// 创建连接栈 + 一个连接
-	connStack := connDeque{}
+	connStack := connDeque{address:address, cp: &connPoo}
 	conn, err := net.Dial("tcp", address)
 
 
@@ -93,7 +103,7 @@ func NewConnPool(address string, opts...ModifyConnOption) (connPool, error){
 		return connPoo, err
 	}
 
-	cInPool := connInPool{conn, address, &connPoo, time.Now(), nil}
+	cInPool := connInPool{conn, address, &connPoo, time.Now(), nil, true}
 	connStack.push(cInPool)
 
 	connPoo.connStack = &connStack
@@ -106,6 +116,9 @@ type connDeque struct {
 	bottom  *connInPool  // 底永远为nil
 	lock    sync.Mutex
 	size    int32
+	address string
+
+	cp *connPool
 }
 
 func (c *connDeque) push(inPool connInPool){
@@ -138,16 +151,22 @@ func (c *connDeque) pop() *connInPool{
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	// 存在
-	if c.size > 0 {
-		conn := c.top
-		c.top = c.top.next
-		c.size--
-		conn.updatedtime = time.Now()
-		////////////////// 异常待补充
-		return conn
+	if c.size <= 0 {
+		conn, err := net.Dial("tcp", c.address)
+		if err != nil {
+			return nil
+		}
+		cInPool := connInPool{conn, c.address, c.cp, time.Now(), nil, true}
+		// c.push(cInPool)
+		return &cInPool
 	}
+	conn := c.top
+	c.top = c.top.next
+	c.size--
+	conn.updatedtime = time.Now()
+	////////////////// 异常待补充
+	return conn
 
-	return nil
 }
 
 func (c *connDeque) getSize() int32 {
@@ -167,10 +186,47 @@ type connInPool struct {
 
 	next *connInPool  // 指向下一个
 	// pre *connInPool
+	isLive bool  // 是否存活，在 PutBack  时检测重新连接或者丢弃
 }
 
-// putBack 放回
+// putBack 放回池子
 func (c *connInPool) PutBack(){
+	// 如果连接失效 && 支持超时重连
+	// 开启单独线程处理
+	if !c.isLive  {
+		// 支持重连
+		if c.cp.failReconnect {
+			go c.reconnect()
+			return
+		}
+		// 不支持的话，丢点
+		return
+	}
+
+	// 否则，正常逻辑放池子
+	c.cp.connStack.push(*c)
+}
+
+func (c *connInPool) SetDead(){
+	c.isLive = false
+}
+
+// reconnect 超时重连
+func (c *connInPool) reconnect(){
+	var conn net.Conn
+	var err error
+	for i := 1; i<5;i++{
+
+		conn, err = net.DialTimeout("tcp", c.address, time.Second * time.Duration(c.cp.failReconnectSecond))
+		time.Sleep(time.Duration(time.Second))
+	}
+
+
+	if err != nil {
+		return
+	}
+
+	c.Conn = conn
 	c.cp.connStack.push(*c)
 }
 

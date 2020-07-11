@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"net"
+	"time"
 )
 
 func main() {
 	//1.建立监听端口
-	listen, err := net.Listen("tcp", "127.0.0.1:8004")
+	listen, err := net.Listen("tcp", "127.0.0.1:11111")
 	if err != nil {
 		fmt.Println("listen failed, err:", err)
 		return
@@ -39,7 +40,7 @@ func process(conn net.Conn) {
 			fmt.Printf("read from conn failed, err:%v", err)
 			break
 		}
-		fmt.Printf("recv from client, content:%v\n", string(buf[:n]))
+		fmt.Printf( time.Now().String() + "recv from client, content:%v\n", string(buf[:n]))
 	}
 
 }

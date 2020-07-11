@@ -11,6 +11,10 @@ type ConnOptions struct {
 	maxIdle     int
 	idletime    time.Duration
 	maxLifetime time.Duration
+
+	// 超时重连
+	failReconnect bool
+	failReconnectSecond int
 }
 
 // defaultConnOptions 默认参数
@@ -20,6 +24,8 @@ var defaultConnOptions = ConnOptions{
 	maxIdle:   10,
 	idletime:  1,
 	maxLifetime: 2,
+	failReconnect: true,
+	failReconnectSecond: 5,
 }
 
 //
