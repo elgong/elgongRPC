@@ -17,11 +17,7 @@ type client struct {
 // Call 调用服务后端
 func (c client) Call(ctx context.Context, serviceName string, method string, reqBody interface{}, rspBody interface{}) error{
 
-
 	// 调用包装器
-
-
-
 }
 
 

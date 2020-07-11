@@ -9,13 +9,21 @@ import (
 // Pool 统一管理的连接池
 var Pool = Pools{}
 
-// pool 连接池接口
+// pool 连接池接口, 不同类型的连接池都要实现该接口
 type pool interface {
 	GetConn(address string) (net.Conn, error)
 	Close() error
 }
 
-// Pools 统一管理的连接池结构体
+// ConnInPool 连接池中的具体连接的封装接口
+type ConnInPool interface {
+	PutBack()   // 放回池子
+	SetDead()  // 设置该连接掉线了
+	Send(data []byte) (int, error)  // 发送数据
+}
+
+// Pools 统一管理的连接池结构体，
+// implement pool 接口
 type Pools struct {
 	poolMap sync.Map
 }
@@ -24,7 +32,7 @@ type Pools struct {
 func (p *Pools) GetConn(address string) (*connInPool, error){
 	// 如果还未创建连接池
 	if _, OK := p.poolMap.Load(address); !OK{
-		connPoo, err := NewConnPool(address)
+		connPoo, err := newConnPool(address)
 
 		if err != nil {
 			return nil, err
@@ -49,7 +57,7 @@ func (p *Pools) GetConn(address string) (*connInPool, error){
 }
 
 func (p *Pools) Close(){
-
+	// 遍历关闭即可，等待实现中
 }
 
 // connPool 单ip 的连接池
@@ -71,7 +79,7 @@ type connPool struct {
 
 // 创建单ip连接池
 // 正常情况下，应该不会遇到多个并发建立多个池子冲突的情况
-func NewConnPool(address string, opts...ModifyConnOption) (connPool, error){
+func newConnPool(address string, opts...ModifyConnOption) (connPool, error){
 	// opt 默认参数
 	var opt = defaultConnOptions
 
@@ -101,22 +109,22 @@ func NewConnPool(address string, opts...ModifyConnOption) (connPool, error){
 
 	cInPool := connInPool{conn, address, &connPoo, time.Now(), nil, true}
 	connStack.push(cInPool)
-
 	connPoo.connStack = &connStack
 
 	return connPoo, nil
 }
 
+// connDeque 与连接池绑定的底层栈实现
 type connDeque struct {
 	top     *connInPool
 	bottom  *connInPool  // 底永远为nil
 	lock    sync.Mutex
 	size    int
 	address string
-
-	cp *connPool
+	cp *connPool  // 指向所属的pool
 }
 
+// push 放入conn
 func (c *connDeque) push(inPool connInPool){
 
 	if &inPool == nil {
@@ -165,6 +173,7 @@ func (c *connDeque) pop() *connInPool{
 
 }
 
+//getSize 得到大小
 func (c *connDeque) getSize() int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
@@ -173,7 +182,8 @@ func (c *connDeque) getSize() int {
 }
 
 
-// connInPool 连接的链式封装
+// connInPool 连接的链式封装- 连接池的底层原子结构
+// implenment ConnInPool 接口
 type connInPool struct {
 	Conn net.Conn
 	address string
@@ -233,5 +243,12 @@ func (c *connInPool) reconnect(){
 
 	c.Conn = conn
 	c.cp.connStack.push(*c)
+}
+
+// Send 发送
+func (c *connInPool) Send(data []byte) (int, error){
+	n, err := c.Conn.Write(data)
+
+	return n, err
 }
 
