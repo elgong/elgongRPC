@@ -3,6 +3,7 @@ package conn_pool
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"sync"
 	"time"
@@ -79,7 +80,8 @@ type connPool struct {
 
 	// 池子对应的定时任务-健康管理哦
 	ticker *time.Ticker
-	isTickerOpen bool
+	isTickerOpen bool  // 是否开启健康管理
+	tickerTime int
 }
 
 // 创建单ip连接池
@@ -102,6 +104,7 @@ func newConnPool(address string, opts...ModifyConnOption) (connPool, error){
 			failReconnectSecond: opt.failReconnectSecond,
 			failReconnectTime: opt.failReconnectTime,
 			isTickerOpen: opt.isTickerOpen,
+			tickerTime: opt.tickerTime,
 	}
 
 	// 创建连接栈 + 一个连接
@@ -119,14 +122,44 @@ func newConnPool(address string, opts...ModifyConnOption) (connPool, error){
 
 	// 如果开启了健康管理
 	if connPoo.isTickerOpen {
-		connPoo.ticker = time.NewTicker(time.Second * 5)
+		connPoo.ticker = time.NewTicker(time.Second * time.Duration(connPoo.tickerTime))
 		// 创建该池子对应的健康管理线程
 		go func(){
 			for _ = range connPoo.ticker.C {
 				fmt.Printf("connPool healthy manage %v", time.Now())
 				// 取出每一个连接，检查是否存活
+				n := connPoo.connStack.getSize()
+				tryRead := make([]byte, 10)
+				for i := 0; i < n && connPoo.connStack.top != nil; i++{
+					// 锁住 取值
+					fmt.Println("111112")
+					connPoo.connStack.lock.Lock()
 
-				// for i := connPoo.connStack.getSize();
+					if connPoo.connStack.getSize() > 0 {
+						cInPool := connPoo.connStack.pop()
+
+						// 10ms /////////////// 不确定这个值合不合适，未来再调整
+						// cInPool.Conn.SetReadDeadline(time.Now().Add(time.Duration(100) * time.Millisecond))
+						n, err := cInPool.Conn.Read(tryRead)
+						fmt.Println("11111")
+
+						// 服务端关闭啦 或者 出现了粘包啦
+						// 那就继续处理下一个，这个直接不管了
+						if err == io.EOF || n > 0 {
+
+							// 这样会有异常吗，，，，未来再修复吧
+							cInPool.Conn.Close()
+							continue
+						}
+					} else {
+						// 释放锁啊
+						//connPoo.connStack.lock.Unlock()
+						fmt.Println("22222")
+					}
+
+					connPoo.connStack.lock.Unlock()   // 先解锁
+
+				}
 			}
 		}()
 	}

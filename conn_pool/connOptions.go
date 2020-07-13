@@ -14,6 +14,7 @@ type ConnOptions struct {
 	failReconnectTime int    // 重连次数
 
 	isTickerOpen bool // 定时任务是否开启
+	tickerTime int   // 定时秒数
 }
 
 // defaultConnOptions 默认参数
@@ -27,6 +28,7 @@ var defaultConnOptions = ConnOptions{
 	failReconnectSecond: 5,
 	failReconnectTime: 1,
 	isTickerOpen: true,
+	tickerTime: 5,
 
 }
 
