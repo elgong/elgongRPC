@@ -18,6 +18,7 @@ type client struct {
 func (c client) Call(ctx context.Context, serviceName string, method string, reqBody interface{}, rspBody interface{}) error{
 
 	// 调用包装器
+	return nil
 }
 
 

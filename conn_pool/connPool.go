@@ -2,6 +2,7 @@ package conn_pool
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -75,6 +76,10 @@ type connPool struct {
 	failReconnectTime int    // 重连次数
 
 	connStack    *connDeque
+
+	// 池子对应的定时任务-健康管理哦
+	ticker *time.Ticker
+	isTickerOpen bool
 }
 
 // 创建单ip连接池
@@ -96,6 +101,7 @@ func newConnPool(address string, opts...ModifyConnOption) (connPool, error){
 			failReconnect: opt.failReconnect,
 			failReconnectSecond: opt.failReconnectSecond,
 			failReconnectTime: opt.failReconnectTime,
+			isTickerOpen: opt.isTickerOpen,
 	}
 
 	// 创建连接栈 + 一个连接
@@ -110,6 +116,22 @@ func newConnPool(address string, opts...ModifyConnOption) (connPool, error){
 	cInPool := connInPool{conn, address, &connPoo, time.Now(), nil, true}
 	connStack.push(cInPool)
 	connPoo.connStack = &connStack
+
+	// 如果开启了健康管理
+	if connPoo.isTickerOpen {
+		connPoo.ticker = time.NewTicker(time.Second * 5)
+		// 创建该池子对应的健康管理线程
+		go func(){
+			for _ = range connPoo.ticker.C {
+				fmt.Printf("connPool healthy manage %v", time.Now())
+				// 取出每一个连接，检查是否存活
+
+				// for i := connPoo.connStack.getSize();
+			}
+		}()
+	}
+
+
 
 	return connPoo, nil
 }
