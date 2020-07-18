@@ -1,8 +1,8 @@
 package codec
 
 import (
-	"github.com/vmihailenco/msgpack"
 	. "github.com/elgong/elgongRPC/plugin_centre"
+	"github.com/vmihailenco/msgpack"
 )
 
 // MsgPackCodec 注册进管理中心
@@ -16,10 +16,10 @@ type MsgPackCodec struct{
 	Name PluginName
 }
 
-func (c *MsgPackCodec) Encode(v interface{}) ([]byte, error) {
-	return msgpack.Marshal(v)
+func (c MsgPackCodec) Encode(value interface{}) ([]byte, error) {
+	return msgpack.Marshal(value)
 }
 
-func (c *MsgPackCodec) Decode(data []byte, v interface{}) error {
-	return msgpack.Unmarshal(data, v)
+func (c MsgPackCodec) Decode(data []byte, value interface{}) error {
+	return msgpack.Unmarshal(data, value)
 }

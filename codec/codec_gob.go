@@ -19,17 +19,17 @@ type GobCodec struct {
 	Name PluginName
 }
 
-func (g *GobCodec) Encode(v interface{}) ([]byte, error) {
+func (g GobCodec) Encode(value interface{}) ([]byte, error) {
 	var buf bytes.Buffer
-	err := gob.NewEncoder(&buf).Encode(v)
+	err := gob.NewEncoder(&buf).Encode(value)
 	return buf.Bytes(), err
 }
 
-func (g *GobCodec) Decode(data []byte, value interface{}) error {
+func (g GobCodec) Decode(data []byte, value interface{}) error {
 	buf := bytes.NewBuffer(data)
 	err := gob.NewDecoder(buf).Decode(value)
 	return err
 }
 
-
+///////////////////// 为什么实现接口， 不能使用 g *GobCodec, 提示未实现？？？
 

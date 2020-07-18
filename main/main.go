@@ -1,23 +1,25 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"github.com/elgong/elgongRPC/interceptor"
+	"github.com/elgong/elgongRPC/codec"
+	_ "github.com/elgong/elgongRPC/codec"
+	//"github.com/elgong/elgongRPC/interceptor"
+	"github.com/elgong/elgongRPC/plugin_centre"
 )
-func call (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error {
-
-	fmt.Println("函数调用了")
-	return nil
-}
-
-
-func in (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, callFunc interceptor.CallFunc) error {
-
-	fmt.Println("之前执行哦")
-	call(ctx, serviceName, methodName, reqBody, rspBody)
-	return nil
-}
+//func call (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error {
+//
+//	fmt.Println("函数调用了")
+//	return nil
+//}
+//
+//
+//func in (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}, callFunc interceptor.CallFunc) error {
+//
+//	fmt.Println("之前执行哦")
+//	call(ctx, serviceName, methodName, reqBody, rspBody)
+//	return nil
+//}
 func main() {
 
 	// interceptor.Interceptorss.Register(in)
@@ -29,5 +31,19 @@ func main() {
 	//
 
 	// plugin_centre.PluginCenter.Register()
+
+
+	// 插件中心
+	byt, _ := plugin_centre.PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec).Encode("hello")
+
+	fmt.Println(byt)
+
+	var s string
+
+	plugin_centre.PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec).Decode(byt, &s)
+
+	fmt.Println(s)
+
+
 
 }
