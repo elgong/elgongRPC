@@ -1,4 +1,4 @@
-// content of client.go
+// content of client_prototest.go
 package main
 
 import (

@@ -1,4 +1,4 @@
-// content of server.go
+// content of server_prototest.go
 package main
 
 

@@ -10,10 +10,16 @@ import (
 type PluginType string
 type PluginName string
 
-// 初始化插件
-var PluginCenter = Plugin{
-	name: "插件管理",
-	pluginMap:  make(map[PluginType]map[PluginName]interface{}),
+// PluginCenter 插件管理中心
+var PluginCenter Plugin
+
+// init 初始化插件管理中心
+func init(){
+	// 初始化插件
+	PluginCenter = Plugin{
+		name: "插件管理",
+		pluginMap:  make(map[PluginType]map[PluginName]interface{}),
+	}
 }
 
 // Plugins 插件中心结构体

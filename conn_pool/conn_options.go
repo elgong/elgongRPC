@@ -27,7 +27,7 @@ var defaultConnOptions = ConnOptions{
 	failReconnect: true,
 	failReconnectSecond: 5,
 	failReconnectTime: 1,
-	isTickerOpen: true,
+	isTickerOpen: false,
 	tickerTime: 5,
 
 }

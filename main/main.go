@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/elgong/elgongRPC/codec"
 	_ "github.com/elgong/elgongRPC/codec"
-	//"github.com/elgong/elgongRPC/interceptor"
-	"github.com/elgong/elgongRPC/plugin_centre"
+	. "github.com/elgong/elgongRPC/protocol"
 )
 //func call (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error {
 //
@@ -33,16 +31,28 @@ func main() {
 	// plugin_centre.PluginCenter.Register()
 
 
-	// 插件中心
-	byt, _ := plugin_centre.PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec).Encode("hello")
+	//// 插件中心
+	//byt, _ := plugin_centre.PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec).Encode("hello")
+	//
+	//fmt.Println(byt)
+	//
+	//var s string
+	//
+	//plugin_centre.PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec).Decode(byt, &s)
+	//
+	//fmt.Println(s)
 
-	fmt.Println(byt)
+	msg := NewMessage()
+	msg.SeqID = 11111
+	msg.MethodName = "11111"
+	msg.Body = "body"
 
-	var s string
+	proto := DefaultProtocol{}
 
-	plugin_centre.PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec).Decode(byt, &s)
+	byte := proto.EncodeMessage(msg)
+	fmt.Println(byte)
 
-	fmt.Println(s)
+	proto.DecodeMessage(byte)
 
 
 
