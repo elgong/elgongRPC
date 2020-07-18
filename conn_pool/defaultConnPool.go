@@ -12,7 +12,7 @@ import (
 )
 // Pools 注册进入插件管理中心
 func init(){
-	pools := Pools{ConnType, "defaultConnPool", sync.Map{}}
+	pools := DefaultPools{ConnType, "defaultConnPool", sync.Map{}}
 	PluginCenter.Register(pools.Type, pools.Name, &pools)
 }
 
@@ -25,14 +25,14 @@ type ConnInPool interface {
 
 // Pools 统一管理的连接池结构体，
 // implement pool 接口
-type Pools struct {
+type DefaultPools struct {
 	Type PluginType
 	Name PluginName
 	poolMap sync.Map
 }
 
 // todo: 异常补充
-func (p *Pools) GetConn(address string) (*connInPool, error){
+func (p *DefaultPools) GetConn(address string) (*connInPool, error){
 	// 如果还未创建连接池
 	if _, OK := p.poolMap.Load(address); !OK{
 		connPoo, err := newConnPool(address)
@@ -59,7 +59,7 @@ func (p *Pools) GetConn(address string) (*connInPool, error){
 	return nil, nil
 }
 
-func (p *Pools) Close(){
+func (p *DefaultPools) Close(){
 	// 遍历关闭即可，等待实现中
 }
 
