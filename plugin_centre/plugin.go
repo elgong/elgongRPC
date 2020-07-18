@@ -6,25 +6,31 @@ import (
 	"sync"
 )
 
-// 类型别名
-type pluginType string
-type pluginName string
+// 别名
+type PluginType string
+type PluginName string
+
+// 初始化插件
+var PluginCenter = Plugin{
+	name: "插件管理",
+	pluginMap:  make(map[PluginType]map[PluginName]interface{}),
+}
 
 // Plugins 插件中心结构体
-type Plugins struct {
+type Plugin struct {
 	name string
-	pluginMap map[pluginType]map[pluginName]interface{}
+	pluginMap map[PluginType]map[PluginName]interface{}
 	lock sync.RWMutex
 }
 
 // Register 注册插件到中心
-func (p *Plugins) Register(pType pluginType, pName pluginName, plugin interface{}){
+func (p *Plugin) Register(pType PluginType, pName PluginName, plugin interface{}){
 
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	// 未注册过该插件类型
 	if _, OK := p.pluginMap[pType]; !OK{
-		p.pluginMap[pType] = make(map[pluginName]interface{})
+		p.pluginMap[pType] = make(map[PluginName]interface{})
 	}
 
 	// 注册插件
@@ -32,7 +38,7 @@ func (p *Plugins) Register(pType pluginType, pName pluginName, plugin interface{
 }
 
 // Get 从中心获取指定插件
-func (p *Plugins) Get(pType pluginType, pName pluginName) interface{}{
+func (p *Plugin) Get(pType PluginType, pName PluginName) interface{}{
 	p.lock.RLock()
 	defer p.lock.RUnlock()
 
@@ -51,7 +57,7 @@ func (p *Plugins) Get(pType pluginType, pName pluginName) interface{}{
 }
 
 // Remove 移除插件
-func (p *Plugins) Remove(pType pluginType, pName pluginName){
+func (p *Plugin) Remove(pType PluginType, pName PluginName){
 	p.lock.RLock()
 	defer p.lock.RUnlock()
 
@@ -71,8 +77,4 @@ func (p *Plugins) Remove(pType pluginType, pName pluginName){
 	fmt.Println("插件%s 已经从管理中心移除", pName)
 }
 
-// 初始化插件
-var plugins = Plugins{
-	name: "插件管理",
-	pluginMap:  make(map[pluginType]map[pluginName]interface{}),
-}
+
