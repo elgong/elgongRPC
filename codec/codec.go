@@ -1,5 +1,5 @@
 package codec
-// 类型定义
+// 编解码插件  编解码统一接口
 
 const CodecType = "codec"
 

@@ -9,7 +9,7 @@ import (
 func TestUnitMsgPackCodec(t *testing.T) {
 	// 注册进中心
 	msgpackCodec := MsgPackCodec{CodecType, "msgpackCodec"}
-	PluginCenter.Register(msgpackCodec.Type, msgpackCodec.Name, msgpackCodec)
+	PluginCenter.Register(msgpackCodec.Type, msgpackCodec.Name, &msgpackCodec)
 
 	data := "hello world !!!"  // 待传输的数据
 	// 编码

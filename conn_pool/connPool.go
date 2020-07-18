@@ -1,20 +1,19 @@
 package conn_pool
+// 连接池插件 默认的实现版本
 
 import (
 	"errors"
 	"fmt"
+	. "github.com/elgong/elgongRPC/plugin_centre"
 	"io"
 	"net"
 	"sync"
 	"time"
 )
-// Pool 统一管理的连接池
-var Pool = Pools{}
-
-// pool 连接池接口, 不同类型的连接池都要实现该接口
-type pool interface {
-	GetConn(address string) (net.Conn, error)
-	Close() error
+// Pools 注册进入插件管理中心
+func init(){
+	pools := Pools{ConnType, "defaultConnPool", sync.Map{}}
+	PluginCenter.Register(pools.Type, pools.Name, &pools)
 }
 
 // ConnInPool 连接池中的具体连接的封装接口
@@ -27,6 +26,8 @@ type ConnInPool interface {
 // Pools 统一管理的连接池结构体，
 // implement pool 接口
 type Pools struct {
+	Type PluginType
+	Name PluginName
 	poolMap sync.Map
 }
 

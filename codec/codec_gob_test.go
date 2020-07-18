@@ -9,7 +9,7 @@ import (
 func TestUnitGobCodec(t *testing.T) {
 	// 注册进中心
 	gobCodec := GobCodec{CodecType, "gobCodec"}
-	PluginCenter.Register(gobCodec.Type, gobCodec.Name, gobCodec)
+	PluginCenter.Register(gobCodec.Type, gobCodec.Name, &gobCodec)
 
 	data := "hello world !!!"  // 待传输的数据
 	// 编码
