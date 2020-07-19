@@ -18,6 +18,8 @@ func main() {
 	call := &Call{}
 	call.Request = msg
 	call.Address = "127.0.0.1:22221"
+
+
 	rpc.Send(context.Background(), call)
 	fmt.Println(call.Response)
 	fmt.Println(call.Response.(map[string]interface{})["MethodName"])

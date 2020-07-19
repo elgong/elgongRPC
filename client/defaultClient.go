@@ -17,7 +17,6 @@ type RPCClient struct {
 	pendingCalls sync.Map
 	mutex        sync.Mutex
 	shutdown     bool
-
 }
 
 func (r *RPCClient) IsShutDown() bool {
