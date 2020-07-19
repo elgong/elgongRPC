@@ -7,7 +7,7 @@
 
 ## elgongRPC 结构
 
-![框架](https://note.youdao.com/yws/public/resource/c8ef119163ee0f30183c043f0d950f8c/xmlnote/B3AFB12AE74F4BF58F0BE446197715C6/32385)
+![框架](https://github.com/elgong/elgongRPC/blob/master/rpc.png)
 
 
 
