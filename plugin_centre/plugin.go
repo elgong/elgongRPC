@@ -14,28 +14,28 @@ type PluginName string
 var PluginCenter Plugin
 
 // init 初始化插件管理中心
-func init(){
+func init() {
 	// 初始化插件
 	PluginCenter = Plugin{
-		name: "插件管理",
-		pluginMap:  make(map[PluginType]map[PluginName]interface{}),
+		name:      "插件管理",
+		pluginMap: make(map[PluginType]map[PluginName]interface{}),
 	}
 }
 
 // Plugins 插件中心结构体
 type Plugin struct {
-	name string
+	name      string
 	pluginMap map[PluginType]map[PluginName]interface{}
-	lock sync.RWMutex
+	lock      sync.RWMutex
 }
 
 // Register 注册插件到中心
-func (p *Plugin) Register(pType PluginType, pName PluginName, plugin interface{}){
+func (p *Plugin) Register(pType PluginType, pName PluginName, plugin interface{}) {
 
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	// 未注册过该插件类型
-	if _, OK := p.pluginMap[pType]; !OK{
+	if _, OK := p.pluginMap[pType]; !OK {
 		p.pluginMap[pType] = make(map[PluginName]interface{})
 	}
 
@@ -44,42 +44,35 @@ func (p *Plugin) Register(pType PluginType, pName PluginName, plugin interface{}
 }
 
 // Get 从中心获取指定插件
-func (p *Plugin) Get(pType PluginType, pName PluginName) interface{}{
+func (p *Plugin) Get(pType PluginType, pName PluginName) interface{} {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
-	defer func(){
-		fmt.Println("池子释放了", pName)
-	}()
 
-
-
-
-	if _, OK := p.pluginMap[pType]; !OK{
+	if _, OK := p.pluginMap[pType]; !OK {
 		panic("该插件类型未注册")
 		return nil
 	}
 
 	// 找到插件
-	if _, OK := p.pluginMap[pType][pName]; !OK{
+	if _, OK := p.pluginMap[pType][pName]; !OK {
 		panic("该插件名未注册")
 		return nil
 	}
-	fmt.Println("池子获取了", pName)
 	return p.pluginMap[pType][pName]
 }
 
 // Remove 移除插件
-func (p *Plugin) Remove(pType PluginType, pName PluginName){
+func (p *Plugin) Remove(pType PluginType, pName PluginName) {
 	p.lock.RLock()
 	defer p.lock.RUnlock()
 
-	if _, OK := p.pluginMap[pType]; !OK{
+	if _, OK := p.pluginMap[pType]; !OK {
 		panic("该插件类型未注册")
 		return
 	}
 
 	// 找到插件
-	if _, OK := p.pluginMap[pType][pName]; !OK{
+	if _, OK := p.pluginMap[pType][pName]; !OK {
 		panic("该插件名未注册")
 		return
 	}
@@ -88,5 +81,3 @@ func (p *Plugin) Remove(pType PluginType, pName PluginName){
 
 	fmt.Println("插件%s 已经从管理中心移除", pName)
 }
-
-
