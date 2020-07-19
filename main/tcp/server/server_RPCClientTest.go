@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	. "github.com/elgong/elgongRPC/plugin_centre"
-	"github.com/elgong/elgongRPC/protocol"
+	. "github.com/elgong/elgongRPC/protocol"
 	//"io"
 	//"log"
 	"net"
@@ -20,7 +20,7 @@ func main() {
 	}
 
 	fmt.Println("listen Start...:")
-
+	codec := PluginCenter.Get("protocol", "defaultProtocol").(Protocol)
 	for {
 		//2.接收客户端的链接
 		conn, err := listen.Accept()
@@ -29,24 +29,19 @@ func main() {
 
 		}
 
-		msg, err := PluginCenter.Get("protocol", "defaultProtocol").(protocol.Protocol).DecodeMessage(conn)
+		msg, err := codec.DecodeMessage(conn)
 
-		//if err != nil {
-		//	if err == io.EOF {
-		//		log.Printf("client has closed this connection: %s", conn.RemoteAddr().String())
-		//	} else if strings.Contains(err.Error(), "use of closed network connection") {
-		//		log.Printf("connection %s is closed", conn.RemoteAddr().String())
-		//	} else {
-		//		log.Printf("failed to read request: %v", err)
-		//	}
-		//	return
-		//}
 		fmt.Println("-------------")
 		fmt.Println("server shoudao :  ", msg)
 
-		byt := PluginCenter.Get("protocol", "defaultProtocol").(protocol.Protocol).EncodeMessage(msg)
+		m := msg.(*DefalutMsg)
+		m.ServiceName = "shoudesdsa dsad sads dasdsad "
 
+		//byt := PluginCenter.Get("protocol", "defaultProtocol").(protocol.Protocol).EncodeMessage(m)
+		// codec := PluginCenter.Get("protocol", "defaultProtocol").(protocol.Protocol)
+		byt := codec.EncodeMessage(m)
 
+		fmt.Println("codec: ", byt)
 		for i := 0; i < len(byt); {
 			n, err := conn.Write(byt[i:])
 			if err != nil {

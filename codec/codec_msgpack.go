@@ -8,7 +8,7 @@ import (
 // MsgPackCodec 注册进管理中心
 func init(){
 	msgpackCodec := MsgPackCodec{CodecType, "msgpackCodec"}
-	PluginCenter.Register(msgpackCodec.Type, msgpackCodec.Name, msgpackCodec)
+	PluginCenter.Register(msgpackCodec.Type, msgpackCodec.Name, &msgpackCodec)
 }
 
 type MsgPackCodec struct{

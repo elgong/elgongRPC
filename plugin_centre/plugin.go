@@ -47,6 +47,12 @@ func (p *Plugin) Register(pType PluginType, pName PluginName, plugin interface{}
 func (p *Plugin) Get(pType PluginType, pName PluginName) interface{}{
 	p.lock.RLock()
 	defer p.lock.RUnlock()
+	defer func(){
+		fmt.Println("池子释放了", pName)
+	}()
+
+
+
 
 	if _, OK := p.pluginMap[pType]; !OK{
 		panic("该插件类型未注册")
@@ -58,7 +64,7 @@ func (p *Plugin) Get(pType PluginType, pName PluginName) interface{}{
 		panic("该插件名未注册")
 		return nil
 	}
-
+	fmt.Println("池子获取了", pName)
 	return p.pluginMap[pType][pName]
 }
 

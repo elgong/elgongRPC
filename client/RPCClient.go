@@ -11,6 +11,12 @@ import (
 	"sync"
 )
 
+//
+func NewRpcClient() *RPCClient{
+	return &RPCClient{}
+}
+
+// RPCClient 客户端
 type RPCClient struct {
 	seq          uint64
 	codec        codec.Codec
@@ -24,7 +30,19 @@ func (r *RPCClient) IsShutDown() bool {
 }
 
 // Call 调用服务后端
-func (r RPCClient) Call(ctx context.Context, serviceName string, method string, reqBody interface{}, rspBody interface{}) error{
+func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *protocol.DefalutMsg) error{
+
+	call := &Call{}
+	call.Request = reqBody
+
+	// 获取IP 地址
+	call.Address = "127.0.0.1:22221"
+
+	r.Send(ctx, call)
+
+	*rspBody = *call.Response.(*protocol.DefalutMsg)
+
+	fmt.Println("call.Response", call.Response)
 
 	// 调用包装器
 	return nil
@@ -71,7 +89,6 @@ func (r RPCClient) Send(ctx context.Context, call *Call){
 	if err != nil {
 		fmt.Println("数据解析错误")
 	}
-
 	call.Response = msg
 }
 

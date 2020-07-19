@@ -13,15 +13,15 @@ func main() {
 	msg.SeqID = 11111
 	msg.MethodName = "method"
 	msg.Body = map[string]string{"name":"elgong"}
-	msg.ServiceName = "service-1"
-	msg.MethodName = "printA"
+	msg.ServiceName = "service-2"
+	msg.MethodName = "printB"
 
-	rpc := NewRpcClient()
+	rpc := RPCClient{}
 
 	msg2 := protocol.NewMessage()
-	msg2.IsRequest = true
-	rpc.Call(context.Background(), msg, &msg2)
-	fmt.Println(msg2.ServiceName)
+	rpc.Call(context.Background(), msg, msg2)
+
+	fmt.Println("shoudao  ", msg2)
 	// fmt.Println(msg.Response.(map[string]interface{})["MethodName"])
 
 	select {

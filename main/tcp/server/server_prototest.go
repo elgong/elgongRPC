@@ -44,6 +44,8 @@ func main() {
 		fmt.Println("-------------")
 		fmt.Println("server shoudao :  ", msg)
 
+		time.Sleep(1000)
+
 		byt := PluginCenter.Get("protocol", "defaultProtocol").(protocol.Protocol).EncodeMessage(msg)
 
 

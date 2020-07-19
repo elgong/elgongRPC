@@ -1,10 +1,17 @@
 package protocol
 
-// 消息体头部  目前不可定制插件
+import . "github.com/elgong/elgongRPC/plugin_centre"
+
+// 消息体头部  可定制
+
+func init(){
+
+	PluginCenter.Register(MsgType, "defaultMsg", &DefalutMsg{})
+}
 
 // NewMessage 创建MSG 对象
-func NewMessage() *DefalutMsg{
-	return &DefalutMsg{}
+func NewMessage() DefalutMsg{
+	return DefalutMsg{}
 }
 
 // DefaultMsgHeader  默认消息头

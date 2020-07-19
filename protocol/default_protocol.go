@@ -16,7 +16,7 @@ var rpcVersion = "v1.0"
 func init(){
 
 	deafultProtocol := DefaultProtocol{ProtocolType, "defaultProtocol"}
-	PluginCenter.Register(deafultProtocol.Type, deafultProtocol.Name, deafultProtocol)
+	PluginCenter.Register(deafultProtocol.Type, deafultProtocol.Name, &deafultProtocol)
 }
 
 // DefaultProtocol 默认协议
@@ -60,7 +60,7 @@ func (d DefaultProtocol) EncodeMessage(message interface{}) []byte{
 	copyFullWithOffset(data, headerLenBytes, &start)
 
 	copyFullWithOffset(data, msg, &start)
-
+	fmt.Println("encode")
 	fmt.Println("总",totalLen)
 	fmt.Println("头", headerLen)
 	fmt.Println("data", len(data))
@@ -68,7 +68,10 @@ func (d DefaultProtocol) EncodeMessage(message interface{}) []byte{
 
 }
 
-func (d DefaultProtocol) DecodeMessage(r io.Reader) (msg interface{}, err error) {
+func (d DefaultProtocol) DecodeMessage(r io.Reader) (interface{}, error) {
+
+	var err error
+	msg := &DefalutMsg{}// PluginCenter.Get("msg", "defaultMsg")
 	codec := PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec)
 
 
@@ -81,12 +84,12 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (msg interface{}, err error)
 	_, err = io.ReadFull(r, first2Byte)
 	if err != nil {
 		fmt.Println("解析魔数时网络错误")
-		return
+		return msg, err
 	}
 
 	if first2Byte[0] != magicNum[0] || first2Byte[1] != magicNum[1] {
 		fmt.Println("魔数错误")
-		return
+		return msg, err
 	}
 
 	// 解析 rpc 版本
@@ -96,7 +99,7 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (msg interface{}, err error)
 	_, err = io.ReadFull(r, rpcV)
 	if err != nil {
 		fmt.Println("解析RPC version时, 出问题了")
-		return
+		return msg, err
 	}
 
 	// 解析总长度
@@ -104,13 +107,13 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (msg interface{}, err error)
 	_, err = io.ReadFull(r, totalLenBytes)
 	if err != nil {
 		fmt.Println("解析 totalLenBytes 时, 出问题了")
-		return
+		return msg, err
 	}
 	totalLen := int(binary.BigEndian.Uint32(totalLenBytes))
 
 	if totalLen < 4 {
 		err = errors.New("invalid total length")
-		return
+		return msg, err
 	}
 
 	// 解析头长度
@@ -118,7 +121,7 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (msg interface{}, err error)
 	_, err = io.ReadFull(r, headLenBytes)
 	if err != nil {
 		fmt.Println("解析 headLenBytes 时, 出问题了")
-		return
+		return msg, err
 	}
 
 	headLen := int(binary.BigEndian.Uint16(headLenBytes))
@@ -132,12 +135,12 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (msg interface{}, err error)
 
 
 
-	codec.Decode(data, &msg)
-
+	codec.Decode(data, msg)
+	fmt.Println("decode")
 	fmt.Println("总",totalLen)
 	fmt.Println("头", headLen)
 	fmt.Println("data", len(data))
-	return
+	return msg, nil
 }
 
 func copyFullWithOffset(dst []byte, src []byte, start *int) {

@@ -11,7 +11,7 @@ import (
 // GobCodec 注册进插件管理中心
 func init(){
 	gobCodec := GobCodec{CodecType, "gobCodec"}
-	PluginCenter.Register(gobCodec.Type, gobCodec.Name, gobCodec)
+	PluginCenter.Register(gobCodec.Type, gobCodec.Name, &gobCodec)
 }
 
 type GobCodec struct {

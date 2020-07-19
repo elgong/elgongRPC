@@ -5,6 +5,7 @@ import (
 )
 
 const ProtocolType = "protocol"
+const MsgType = "msg"
 
 // 消息定义接口
 type Protocol interface {
