@@ -62,3 +62,5 @@
   - --edited=修改内容
 - 其他：
   - --other=其他
+- bug
+  - --bugfix=bug内容
