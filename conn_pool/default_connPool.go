@@ -119,7 +119,7 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 	}
 
 	// 创建一个连接
-	cInPool := connInPool{conn, address, &connPoo, time.Now(), nil, true}
+	cInPool := connInPool{conn, address, &connPoo, time.Now(), nil, nil, true}
 	connStack.push(cInPool)
 	connPoo.connStack = &connStack
 
@@ -130,10 +130,9 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 		// 创建该池子对应的健康管理线程
 		go func(connPoo *connPool) {
 			for _ = range connPoo.ticker.C {
-				fmt.Println("connPool healthy manage %v", time.Now())
 				// 取出每一个连接，检查是否存活
 				n := connPoo.connStack.getSize()
-				fmt.Println(n)
+				fmt.Println("connPool healthy manage: have ", n, "conn in pool when ", time.Now())
 
 				// 遍历处理 n 次
 				for i := 0; i < n && connPoo.connStack.top != nil; i++ {
@@ -141,7 +140,7 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 					// connPoo.connStack.lock.Lock()
 					// 保证有连接再 pop
 					if connPoo.connStack.getSize() > 0 {
-						cInPool := connPoo.connStack.pop()
+						cInPool := connPoo.connStack.popBottom()
 						cInPool.Conn.SetWriteDeadline(time.Now().Add(time.Duration(100) * time.Millisecond))
 						// 发送心跳包
 						_, err := cInPool.Conn.Write([]byte{0xaa, 0xbb})
@@ -184,13 +183,18 @@ func (c *connDeque) push(inPool connInPool) {
 	defer c.lock.Unlock()
 	// 栈中已经存在元素时
 	if c.size > 0 {
-		inPool.next = c.top
+		inPool.next = c.top // 新元素next指向当前的栈顶
+		inPool.pre = nil    // 新元素pre 指向 nil
+		c.top.pre = &inPool // 旧栈顶pre 指向 新元素
 		c.top = &inPool
 	} else {
-		// 栈中无元素
-		c.bottom = nil
-		inPool.next = c.bottom
-		c.top = &inPool
+		// 栈中无元素时, 先设置栈底元素
+		c.bottom = &connInPool{}
+		c.bottom.next = nil    // 栈底next指空
+		c.bottom.pre = &inPool // 栈底pre指向新元素
+		inPool.next = c.bottom // 新元素next指向栈底
+		inPool.pre = nil       // 新元素pre
+		c.top = &inPool        // top更新
 	}
 	c.size++
 	// 操作时间
@@ -203,23 +207,64 @@ func (c *connDeque) pop() *connInPool {
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	// 存在
+	// 不存在
 	if c.size <= 0 {
 		conn, err := net.Dial("tcp", c.address)
 		if err != nil {
 			return nil
 		}
-		cInPool := connInPool{conn, c.address, c.cp, time.Now(), nil, true}
+		cInPool := connInPool{conn, c.address, c.cp, time.Now(), nil, nil, true}
 		// c.push(cInPool)
 		return &cInPool
 	}
+
+	// 将当前的栈顶返回,先保留起来
 	conn := c.top
+	// 栈顶向下移动
 	c.top = c.top.next
+	c.top.pre = nil
+
+	// 要返回的元素,清空指向的东西
+	conn.pre = nil
+	conn.next = nil
+
 	c.size--
 	conn.updatedtime = time.Now()
 	////////////////// 异常待补充
 	return conn
 
+}
+
+// 队列前端取出  相当于pop
+func (c *connDeque) poll() *connInPool {
+	return c.pop()
+}
+
+// 队列后端取出
+func (c *connDeque) popBottom() *connInPool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	// 不存在
+	if c.size <= 0 {
+		return nil
+	}
+
+	// 取到倒数二节点
+	conn := c.bottom.pre
+	// 从链表中移除 倒数二节点
+	c.bottom.pre = conn.pre
+
+	if conn.pre != nil {
+		conn.pre.next = c.bottom
+	}
+
+	conn.next = nil
+	conn.pre = nil
+
+	c.size--
+	conn.updatedtime = time.Now()
+	////////////////// 异常待补充
+	return conn
 }
 
 //getSize 得到大小
@@ -238,8 +283,8 @@ type connInPool struct {
 	cp          *connPool // 关联池子，方便放回
 	updatedtime time.Time
 
-	next *connInPool // 指向下一个
-	// pre *connInPool
+	next   *connInPool // 指向下一个
+	pre    *connInPool
 	isLive bool // 是否存活，在 PutBack  时检测重新连接或者丢弃
 }
 
