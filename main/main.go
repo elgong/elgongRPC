@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"time"
+
 	_ "github.com/elgong/elgongRPC/codec"
-	. "github.com/elgong/elgongRPC/protocol"
 )
+
 //func call (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error {
 //
 //	fmt.Println("函数调用了")
@@ -30,7 +32,6 @@ func main() {
 
 	// plugin_centre.PluginCenter.Register()
 
-
 	//// 插件中心
 	//byt, _ := plugin_centre.PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec).Encode("hello")
 	//
@@ -42,18 +43,14 @@ func main() {
 	//
 	//fmt.Println(s)
 
-	msg := NewMessage()
-	msg.SeqID = 11111
-	msg.MethodName = "11111"
-	msg.Body = "body"
+	s := time.Now()
 
-	proto := DefaultProtocol{}
+	time.Sleep(5000000000)
+	m := time.Now().Sub(s)
+	fmt.Println(m)
 
-	byte := proto.EncodeMessage(msg)
-	fmt.Println(byte)
-
-	proto.DecodeMessage(byte)
-
-
+	if m >= time.Second*3 {
+		fmt.Println(33)
+	}
 
 }

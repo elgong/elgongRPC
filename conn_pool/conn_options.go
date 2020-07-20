@@ -4,7 +4,7 @@ package conn_pool
 type ConnOptions struct {
 	initialCap int
 	maxCap     int
-	maxIdle    int
+	maxIdle    int // 最大空闲时间  s
 	//idletime    time.Duration
 	//maxLifetime time.Duration
 
@@ -20,8 +20,8 @@ type ConnOptions struct {
 // defaultConnOptions 默认参数
 var defaultConnOptions = ConnOptions{
 	initialCap: 10,
-	maxCap:     10,
-	maxIdle:    10,
+	maxCap:     10, // 0 默认关闭
+	maxIdle:    10, // 0 默认关闭
 	//idletime:  1,
 	//maxLifetime: 2,
 	failReconnect:       true,

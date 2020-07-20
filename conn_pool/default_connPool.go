@@ -134,6 +134,16 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 				n := connPoo.connStack.getSize()
 				fmt.Println("connPool healthy manage: have ", n, "conn in pool when ", time.Now())
 
+				// 如果开启了最大闲置连接数限制
+				if connPoo.maxCap > 0 && n > connPoo.maxCap {
+					// 先直接丢弃
+					for i := 0; i < (n - connPoo.maxCap); i++ {
+						connPoo.connStack.popBottom()
+					}
+					// 修改当前n的大小
+					n = n - connPoo.maxCap
+				}
+
 				// 遍历处理 n 次
 				for i := 0; i < n && connPoo.connStack.top != nil; i++ {
 					// pop 已经枷锁啦
@@ -148,6 +158,11 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 						if err != nil {
 							// 这样会有异常吗，，，，未来再修复吧
 							cInPool.Conn.Close()
+							continue
+						}
+
+						// 最大空闲时间
+						if connPoo.maxIdle > 0 && time.Now().Sub(cInPool.updatedtime) >= time.Second*time.Duration(connPoo.maxIdle) {
 							continue
 						}
 						// 放回去啦
@@ -291,7 +306,8 @@ type connInPool struct {
 // putBack 放回池子
 func (c *connInPool) PutBack() {
 
-	if c.cp.connStack.size >= c.cp.maxCap {
+	// 最大连接数限制
+	if c.cp.maxCap > 0 && c.cp.connStack.size >= c.cp.maxCap {
 		c.Conn.Close()
 	}
 	// 如果连接失效 && 支持超时重连
