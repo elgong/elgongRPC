@@ -1,3 +1,6 @@
+// @Title 编解码插件 msgpack
+// @Author  elgong 2020.7.18
+// @Update  elgong 2020.7.18
 package codec
 
 import (
@@ -6,12 +9,12 @@ import (
 )
 
 // MsgPackCodec 注册进管理中心
-func init(){
+func init() {
 	msgpackCodec := MsgPackCodec{CodecType, "msgpackCodec"}
 	PluginCenter.Register(msgpackCodec.Type, msgpackCodec.Name, &msgpackCodec)
 }
 
-type MsgPackCodec struct{
+type MsgPackCodec struct {
 	Type PluginType
 	Name PluginName
 }

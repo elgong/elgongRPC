@@ -1,3 +1,7 @@
+// @Title 默认TCP连接池插件
+// @Description
+// @Author  elgong 2020.7.
+// @Update  elgong 2020.7.
 package conn_pool
 
 // 连接池插件 默认的实现版本

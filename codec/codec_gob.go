@@ -1,15 +1,17 @@
-// 2020.7.18
-// v1 先实现 简单的，未来再优化
+// @Title 编解码插件gob
+// @Author  elgong 2020.7.18
+// @Update  elgong 2020.7.18
 package codec
 
 import (
 	"bytes"
 	"encoding/gob"
+
 	. "github.com/elgong/elgongRPC/plugin_centre"
 )
 
 // GobCodec 注册进插件管理中心
-func init(){
+func init() {
 	gobCodec := GobCodec{CodecType, "gobCodec"}
 	PluginCenter.Register(gobCodec.Type, gobCodec.Name, &gobCodec)
 }
@@ -32,4 +34,3 @@ func (g GobCodec) Decode(data []byte, value interface{}) error {
 }
 
 ///////////////////// 为什么实现接口， 不能使用 g *GobCodec, 提示未实现？？？
-

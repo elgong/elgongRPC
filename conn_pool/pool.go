@@ -1,5 +1,8 @@
+// @Title 连接池插件的接口
+// @Description
+// @Author  elgong 2020.7.
+// @Update  elgong 2020.7.
 package conn_pool
-// 连接池插件 接口
 
 import "net"
 

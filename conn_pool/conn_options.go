@@ -1,3 +1,7 @@
+// @Title 连接池的参数设置
+// @Description  函数选项模式
+// @Author  elgong 2020.7.
+// @Update  elgong 2020.7.
 package conn_pool
 
 // ConnOptions 连接池参数结构体
