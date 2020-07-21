@@ -326,7 +326,6 @@ func (c *connInPool) PutBack() {
 		c.Conn.Close()
 		return
 	}
-	fmt.Println("conn push back")
 	// 否则，正常逻辑放池子
 	c.cp.connStack.push(*c)
 }

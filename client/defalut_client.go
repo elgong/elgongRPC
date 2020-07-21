@@ -45,7 +45,6 @@ func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *proto
 	// 解析服务的返回值
 	*rspBody = *call.Response.(*protocol.DefalutMsg)
 
-	fmt.Println("------------------- over")
 }
 
 func (r RPCClient) Send(ctx context.Context, call *Call) {
@@ -86,8 +85,6 @@ func (r RPCClient) Send(ctx context.Context, call *Call) {
 	fmt.Println("read response....")
 	// 读取响应
 	msg, err := proto.DecodeMessage(conn.Conn)
-
-	fmt.Println("read ok")
 
 	if err != nil {
 		fmt.Println("data resolve err")

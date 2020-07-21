@@ -1,4 +1,7 @@
-// 时间 2020.7.7
+// @Title 插件管理中心
+// @Description
+// @Author  elgong 2020.7.
+// @Update  elgong 2020.7.
 package plugin_centre
 
 import (

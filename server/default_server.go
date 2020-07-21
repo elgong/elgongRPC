@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -19,15 +18,47 @@ import (
 // NewRPCServer 创建并返回server
 func NewRPCServer() *RPCServer {
 	s := new(RPCServer)
+	s.serviceMap = make(map[string]*Service)
 	return s
 }
 
 // RPCServer 服务端
 type RPCServer struct {
-	serviceMap       sync.Map
-	mutex            sync.Mutex
-	shutdown         bool
-	requestInProcess int64 //当前正在处理中的请求
+	// 服务的map 容器
+	serviceMap map[string]*Service
+	mutex      sync.Mutex
+
+	// 是否关闭
+	shutdown bool
+}
+
+// Register 注册服务到容器中
+func (r *RPCServer) Register(servcieName string, serviceImpl interface{}) {
+	// 先创建一个空的服务
+	service := &Service{}
+	service.methodsMap = make(map[string]reflect.Method)
+	service.rcvr = reflect.ValueOf(serviceImpl)
+	service.typ = reflect.TypeOf(serviceImpl)
+	service.serviceName = servcieName
+
+	for i := 0; i < service.typ.NumMethod(); i++ {
+		// 需要对方法检查吗
+		method := service.typ.Method(i)
+		methodName := method.Name
+		service.methodsMap[methodName] = method
+	}
+
+	r.mutex.Lock()
+	// 避免重复注册
+	if _, OK := r.serviceMap[service.serviceName]; !OK {
+		r.serviceMap[service.serviceName] = service
+	}
+	r.mutex.Unlock()
+}
+
+// Invoke 服务的方法调用
+func (r *RPCServer) Invoke(serviceName string, methodName string, args interface{}, retArgs interface{}) {
+	r.serviceMap[serviceName].invoke(methodName, args, retArgs)
 }
 
 func (r *RPCServer) Server() {
@@ -57,20 +88,30 @@ func (r *RPCServer) handlerConn(conn *net.Conn) {
 
 	codec := PluginCenter.Get("protocol", "defaultProtocol").(Protocol)
 	for {
+
+		fmt.Println("监听中")
 		// 读 eof结束
 
 		//2.接收客户端的链接
-		msg, _ := codec.DecodeMessage(*conn)
+		msg, err := codec.DecodeMessage(*conn)
+		if err != nil {
+			fmt.Println("接受客户端连接失败")
+			break
+		}
+
 		fmt.Println("server shoudao :  ", msg)
 
 		m := msg.(*DefalutMsg)
-		m.ServiceName = "shoudesdsa dsad sads dasdsad "
+
+		// 必须一个完整的数据////////////////////////////////
+		response := DefalutMsg{Body: map[string]string{
+			"name": "111111",
+		}}
 		// 调用
-		r.invoke()
-
-		byt := codec.EncodeMessage(m)
-
-		_, err := (*conn).Write(byt)
+		r.Invoke(m.ServiceName, m.MethodName, m, &response)
+		fmt.Println("发送", response)
+		byt := codec.EncodeMessage(response)
+		_, err = (*conn).Write(byt)
 		if err != nil {
 			fmt.Println(err)
 			break
@@ -78,36 +119,27 @@ func (r *RPCServer) handlerConn(conn *net.Conn) {
 	}
 }
 
-func (r *RPCServer) invoke() {
-	fmt.Println("服务端调用了*****")
-}
-
-type ServiceInfo struct {
-	Name    string   `json:"name"`
-	Methods []string `json:"methods"`
-}
-
-func (s *RPCServer) Services() []ServiceInfo {
-	var srvs []ServiceInfo
-	s.serviceMap.Range(func(key, value interface{}) bool {
-		sname, ok := key.(string)
-		if ok {
-			srv, ok := value.(*service)
-			if ok {
-				var methodList []string
-				srv.methods.Range(func(key, value interface{}) bool {
-					if m, ok := value.(*methodType); ok {
-						methodList = append(methodList, m.method.Name)
-					}
-					return true
-				})
-				srvs = append(srvs, ServiceInfo{sname, methodList})
-			}
-		}
-		return true
-	})
-	return srvs
-}
+//func (s *RPCServer) Services() []ServiceInfo {
+//	var srvs []ServiceInfo
+//	s.serviceMap.Range(func(key, value interface{}) bool {
+//		sname, ok := key.(string)
+//		if ok {
+//			srv, ok := value.(*service)
+//			if ok {
+//				var methodList []string
+//				srv.methods.Range(func(key, value interface{}) bool {
+//					if m, ok := value.(*methodType); ok {
+//						methodList = append(methodList, m.method.Name)
+//					}
+//					return true
+//				})
+//				srvs = append(srvs, ServiceInfo{sname, methodList})
+//			}
+//		}
+//		return true
+//	})
+//	return srvs
+//}
 
 type methodType struct {
 	method    reflect.Method
@@ -115,39 +147,39 @@ type methodType struct {
 	ReplyType reflect.Type
 }
 
-func (s *RPCServer) Register(rcvr interface{}, metaData map[string]string) error {
-	typ := reflect.TypeOf(rcvr)
-	name := typ.Name()
-	srv := new(service)
-	srv.name = name
-	srv.rcvr = reflect.ValueOf(rcvr)
-	srv.typ = typ
-	methods := suitableMethods(typ, true)
-
-	if len(methods) == 0 {
-		var errorStr string
-
-		// 如果对应的类型没有任何符合规则的方法，扫描对应的指针类型
-		// 也是从net.rpc包里抄来的
-		method := suitableMethods(reflect.PtrTo(srv.typ), false)
-		if len(method) != 0 {
-			errorStr = "Register: type " + name + " has no exported methods of suitable type (hint: pass a pointer to value of that type)"
-		} else {
-			errorStr = "Register: type " + name + " has no exported methods of suitable type"
-		}
-		log.Println(errorStr)
-		return errors.New(errorStr)
-	}
-
-	for k, v := range methods {
-		srv.methods.Store(k, v)
-	}
-
-	if _, duplicate := s.serviceMap.LoadOrStore(name, srv); duplicate {
-		return errors.New("rpc: service already defined: " + name)
-	}
-	return nil
-}
+//func (s *RPCServer) Register(rcvr interface{}, metaData map[string]string) error {
+//	typ := reflect.TypeOf(rcvr)
+//	name := typ.Name()
+//	srv := new(service)
+//	srv.name = name
+//	srv.rcvr = reflect.ValueOf(rcvr)
+//	srv.typ = typ
+//	methods := suitableMethods(typ, true)
+//
+//	if len(methods) == 0 {
+//		var errorStr string
+//
+//		// 如果对应的类型没有任何符合规则的方法，扫描对应的指针类型
+//		// 也是从net.rpc包里抄来的
+//		method := suitableMethods(reflect.PtrTo(srv.typ), false)
+//		if len(method) != 0 {
+//			errorStr = "Register: type " + name + " has no exported methods of suitable type (hint: pass a pointer to value of that type)"
+//		} else {
+//			errorStr = "Register: type " + name + " has no exported methods of suitable type"
+//		}
+//		log.Println(errorStr)
+//		return errors.New(errorStr)
+//	}
+//
+//	for k, v := range methods {
+//		srv.methods.Store(k, v)
+//	}
+//
+//	if _, duplicate := s.serviceMap.LoadOrStore(name, srv); duplicate {
+//		return errors.New("rpc: service already defined: " + name)
+//	}
+//	return nil
+//}
 
 // Precompute the reflect type for error. Can't use error directly
 // because Typeof takes an empty interface value. This is annoying.

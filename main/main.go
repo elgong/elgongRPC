@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"github.com/elgong/elgongRPC/protocol"
 
 	_ "github.com/elgong/elgongRPC/codec"
+	"github.com/elgong/elgongRPC/server"
 )
 
 //func call (ctx context.Context, serviceName string, methodName string, reqBody interface{}, rspBody interface{}) error {
@@ -20,6 +20,7 @@ import (
 //	call(ctx, serviceName, methodName, reqBody, rspBody)
 //	return nil
 //}
+
 func main() {
 
 	// interceptor.Interceptorss.Register(in)
@@ -43,14 +44,16 @@ func main() {
 	//
 	//fmt.Println(s)
 
-	s := time.Now()
+	msg := protocol.NewMessage()
+	msg.SeqID = 11111
+	msg.MethodName = "method"
+	msg.Body = map[string]string{"name": "elgong"}
+	msg.ServiceName = "service-1"
+	msg.MethodName = "printA"
 
-	time.Sleep(5000000000)
-	m := time.Now().Sub(s)
-	fmt.Println(m)
+	rpc := server.NewRPCServer()
 
-	if m >= time.Second*3 {
-		fmt.Println(33)
-	}
+	rpc.Register("MyService", new(MyService))
+	rpc.Invoke("MyService", "PrintA", &msg, &msg)
 
 }

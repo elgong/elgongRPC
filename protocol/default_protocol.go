@@ -70,10 +70,10 @@ func (d DefaultProtocol) EncodeMessage(message interface{}) []byte {
 
 	copyFullWithOffset(data, msg, &start)
 
-	fmt.Println("encode")
-	fmt.Println("totle len:", totalLen)
-	fmt.Println("head len", headLen)
-	fmt.Println("data len", len(msg))
+	//fmt.Println("encode")
+	//fmt.Println("totle len:", totalLen)
+	//fmt.Println("head len", headLen)
+	//fmt.Println("data len", len(msg))
 	return data
 
 }
@@ -98,7 +98,7 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (interface{}, error) {
 
 	if first2Byte[0] != magicNum[0] || first2Byte[1] != magicNum[1] {
 		fmt.Println("魔数错误")
-		return msg, err
+		return msg, errors.New("魔数错误")
 	}
 
 	// 解析 rpc 版本
@@ -137,16 +137,16 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (interface{}, error) {
 
 	data := make([]byte, totalLen-headLen)
 	_, err = io.ReadFull(r, data)
-
 	if err != nil {
 		fmt.Println(err)
+		return msg, err
 	}
 
 	codec.Decode(data, msg)
-	fmt.Println("decode")
-	fmt.Println("totle len:", totalLen)
-	fmt.Println("head len", headLen)
-	fmt.Println("data len", len(data))
+	//fmt.Println("decode")
+	//fmt.Println("totle len:", totalLen)
+	//fmt.Println("head len", headLen)
+	//fmt.Println("data len", len(data))
 	return msg, nil
 }
 
