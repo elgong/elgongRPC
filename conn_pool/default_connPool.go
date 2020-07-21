@@ -213,7 +213,7 @@ func (c *connDeque) push(inPool connInPool) {
 	}
 	c.size++
 	// 操作时间
-	inPool.updatedtime = time.Now()
+	// inPool.updatedtime = time.Now()
 
 }
 
@@ -244,7 +244,7 @@ func (c *connDeque) pop() *connInPool {
 	conn.next = nil
 
 	c.size--
-	conn.updatedtime = time.Now()
+	//conn.updatedtime = time.Now()
 	////////////////// 异常待补充
 	return conn
 
@@ -277,7 +277,7 @@ func (c *connDeque) popBottom() *connInPool {
 	conn.pre = nil
 
 	c.size--
-	conn.updatedtime = time.Now()
+	// conn.updatedtime = time.Now()
 	////////////////// 异常待补充
 	return conn
 }
@@ -356,7 +356,6 @@ func (c *connInPool) reconnect() {
 
 // Send 把数据包循环发送出去
 func (c *connInPool) Send(data []byte) (int, error) {
-	// n, err := c.Conn.Write(data)
 	var sendDataLen = 0
 	var err error
 
@@ -369,6 +368,9 @@ func (c *connInPool) Send(data []byte) (int, error) {
 		}
 		sendDataLen += n
 	}
+
+	// 更新时间设为当前
+	c.updatedtime = time.Now()
 
 	return sendDataLen, err
 }

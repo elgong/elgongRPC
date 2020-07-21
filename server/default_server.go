@@ -57,7 +57,7 @@ func (r *RPCServer) handlerConn(conn *net.Conn) {
 
 	codec := PluginCenter.Get("protocol", "defaultProtocol").(Protocol)
 	for {
-		// 都 eof
+		// 读 eof结束
 
 		//2.接收客户端的链接
 		msg, _ := codec.DecodeMessage(*conn)
@@ -75,14 +75,6 @@ func (r *RPCServer) handlerConn(conn *net.Conn) {
 			fmt.Println(err)
 			break
 		}
-		//for i := 0; i < len(byt); {
-		//	n, err := conn.Write(byt[i:])
-		//	if err != nil {
-		//		fmt.Println(err)
-		//	}
-		//	i += n
-		//	fmt.Println(i)
-		//}
 	}
 }
 
