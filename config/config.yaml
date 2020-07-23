@@ -1,0 +1,13 @@
+# 冒号后面一定要有空格
+# 缩进要用空格
+name: haha
+conn:
+  maxConn: 1
+  minConn: 2
+codec:
+  codec-method: msgpack
+# 服务相关
+server:
+  servicename: hello
+  servicemethod: printa
+  ip: 127.0.0.1:8999
