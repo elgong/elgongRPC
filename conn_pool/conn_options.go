@@ -4,12 +4,18 @@
 // @Update  elgong 2020.7.
 package conn_pool
 
-import "github.com/elgong/elgongRPC/config"
+import (
+	"fmt"
+
+	"github.com/elgong/elgongRPC/config"
+)
 
 var defaultConnOptions ConnOptions
 
 // 从全局配置导入到该配置
 func init() {
+
+	fmt.Println(config.DefalutGlobalConfig)
 	// defaultConnOptions 默认参数
 	defaultConnOptions = ConnOptions{
 		initialCap: config.DefalutGlobalConfig.Conn.InitialCap,

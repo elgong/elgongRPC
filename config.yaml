@@ -1,0 +1,19 @@
+# 冒号后面一定要有空格
+# 缩进要用空格
+name: "elgongRPC-config"
+conn:
+    initialCap: 10
+    maxCap: 10
+    maxIdle: 10
+    failReconnect: true
+    failReconnectSecond: 5
+    failReconnectTime: 1
+    isTickerOpen: true
+    tickerTime: 5
+codec:
+    codec-method: msgpack
+# 服务相关
+server:
+    servicename: hello
+    servicemethod: printa
+    ip: 127.0.0.1:8999

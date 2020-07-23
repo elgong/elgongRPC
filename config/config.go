@@ -1,4 +1,4 @@
-// @Title 连接池的参数设置
+// @Title 全局的参数配置
 // @Description  函数选项模式
 // @Author  elgong 2020.7.24
 // @Update  elgong 2020.7.24
@@ -16,12 +16,14 @@ import (
 var DefalutGlobalConfig *Config
 
 func init() {
-	DefalutGlobalConfig, err := Load("./config/config.yaml")
+	var err error
+	DefalutGlobalConfig, err = Load("./config.yaml")
 
 	if err != nil {
 		panic("参数解析异常")
 	}
-	fmt.Println("默认参数加载成功")
+
+	fmt.Println("参数加载成功:", DefalutGlobalConfig.Name)
 }
 
 type Config struct {
