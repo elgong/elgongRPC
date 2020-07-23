@@ -1,3 +1,7 @@
+// @Title 连接池的参数设置
+// @Description  函数选项模式
+// @Author  elgong 2020.7.24
+// @Update  elgong 2020.7.24
 package config
 
 import (
@@ -12,12 +16,11 @@ import (
 var DefalutGlobalConfig *Config
 
 func init() {
-	err := Load("./config/config.yaml", DefalutGlobalConfig)
+	DefalutGlobalConfig, err := Load("./config/config.yaml")
 
 	if err != nil {
 		panic("参数解析异常")
 	}
-
 	fmt.Println("默认参数加载成功")
 }
 
@@ -26,6 +29,17 @@ type Config struct {
 	Conn struct {
 		MaxConn string `yaml:"maxConn"`
 		MinConn string `yaml:"minConn"`
+
+		InitialCap int `yaml:"initialCap"`
+		MaxCap     int `yaml:"maxCap"`
+		MaxIdle    int `yaml:"maxIdle"`
+		//idletime:  1,
+		//maxLifetime: 2,
+		FailReconnect       bool `yaml:"failReconnect"`
+		FailReconnectSecond int  `yaml:"failReconnectSecond"`
+		FailReconnectTime   int  `yaml:"failReconnectTime"`
+		IsTickerOpen        bool `yaml:"isTickerOpen"`
+		TickerTime          int  `yaml:"tickerTime"`
 	}
 
 	Codec struct {
@@ -40,19 +54,19 @@ type Config struct {
 }
 
 // Load 解析配置参数
-func Load(path string, config *Config) error {
+func Load(path string) (*Config, error) {
 	conf := new(Config)
 	yamlFile, err := ioutil.ReadFile(path)
 
 	if err != nil {
 		log.Println("yamlFile.Get err:", err)
-		return err
+		return nil, err
 	}
 	err = yaml.Unmarshal(yamlFile, &conf)
 	if err != nil {
 		log.Fatal("Unmarshal:", err)
-		return err
+		return nil, err
 	}
-	config = conf
-	return err
+
+	return conf, err
 }

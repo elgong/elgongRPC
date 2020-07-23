@@ -4,6 +4,27 @@
 // @Update  elgong 2020.7.
 package conn_pool
 
+import "github.com/elgong/elgongRPC/config"
+
+var defaultConnOptions ConnOptions
+
+// 从全局配置导入到该配置
+func init() {
+	// defaultConnOptions 默认参数
+	defaultConnOptions = ConnOptions{
+		initialCap: config.DefalutGlobalConfig.Conn.InitialCap,
+		maxCap:     config.DefalutGlobalConfig.Conn.MaxCap,  // 0 默认关闭
+		maxIdle:    config.DefalutGlobalConfig.Conn.MaxIdle, // 0 默认关闭
+		//idletime:  1,
+		//maxLifetime: 2,
+		failReconnect:       config.DefalutGlobalConfig.Conn.FailReconnect,
+		failReconnectSecond: config.DefalutGlobalConfig.Conn.FailReconnectSecond,
+		failReconnectTime:   config.DefalutGlobalConfig.Conn.FailReconnectTime,
+		isTickerOpen:        config.DefalutGlobalConfig.Conn.IsTickerOpen,
+		tickerTime:          config.DefalutGlobalConfig.Conn.TickerTime,
+	}
+}
+
 // ConnOptions 连接池参数结构体
 type ConnOptions struct {
 	initialCap int
@@ -19,20 +40,6 @@ type ConnOptions struct {
 
 	isTickerOpen bool // 定时任务是否开启
 	tickerTime   int  // 定时秒数
-}
-
-// defaultConnOptions 默认参数
-var defaultConnOptions = ConnOptions{
-	initialCap: 10,
-	maxCap:     10, // 0 默认关闭
-	maxIdle:    10, // 0 默认关闭
-	//idletime:  1,
-	//maxLifetime: 2,
-	failReconnect:       true,
-	failReconnectSecond: 5,
-	failReconnectTime:   1,
-	isTickerOpen:        true,
-	tickerTime:          1,
 }
 
 //

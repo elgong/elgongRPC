@@ -2,8 +2,14 @@
 # 缩进要用空格
 name: haha
 conn:
-  maxConn: 1
-  minConn: 2
+  initialCap: 10
+  maxCap: 10
+  maxIdle: 10
+  failReconnect: true
+  failReconnectSecond: 5
+  failReconnectTime: 1
+  isTickerOpen: true
+  tickerTime: 1
 codec:
   codec-method: msgpack
 # 服务相关
