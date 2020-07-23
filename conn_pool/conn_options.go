@@ -15,7 +15,6 @@ var defaultConnOptions ConnOptions
 // 从全局配置导入到该配置
 func init() {
 
-	fmt.Println(config.DefalutGlobalConfig)
 	// defaultConnOptions 默认参数
 	defaultConnOptions = ConnOptions{
 		initialCap: config.DefalutGlobalConfig.Conn.InitialCap,
@@ -29,6 +28,7 @@ func init() {
 		isTickerOpen:        config.DefalutGlobalConfig.Conn.IsTickerOpen,
 		tickerTime:          config.DefalutGlobalConfig.Conn.TickerTime,
 	}
+	fmt.Println("连接池参数解析成功")
 }
 
 // ConnOptions 连接池参数结构体

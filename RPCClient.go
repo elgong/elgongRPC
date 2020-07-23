@@ -10,6 +10,10 @@ import (
 
 func main() {
 
+	// 1. 创建客户端
+	rpc := NewRpcClient()
+
+	// 封装消息请求体
 	msg := protocol.NewMessage()
 	msg.SeqID = 11111
 	msg.MethodName = "method"
@@ -17,13 +21,13 @@ func main() {
 	msg.ServiceName = "MyService"
 	msg.MethodName = "PrintA"
 
-	rpc := NewRpcClient()
+	rsp := protocol.NewMessage()
 
-	msg2 := protocol.NewMessage()
-	msg2.IsRequest = true
-	rpc.Call(context.Background(), msg, &msg2)
+	// rpc 调用
+	rpc.Call(context.Background(), msg, &rsp)
 
-	fmt.Println("shoudao ", msg2)
+	fmt.Println("shoudao ", rsp)
 
+	// 阻塞
 	select {}
 }
