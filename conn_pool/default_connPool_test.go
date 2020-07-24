@@ -1,27 +1,40 @@
 package conn_pool
 
 import (
-	"fmt"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-// 等着补单测,时间不够,先临时凑合测试....
+// 等着补单测,时间不够,先临时凑合测试.... 复杂写就是testify, 简单写就是convey
 func TestUnitConnDeque(t *testing.T) {
-	deque := connDeque{}
 
-	conn := deque.popBottom()
+	Convey("ConnDeque 双向链表测试", t, func() {
+		// connDeq 创建一个底层的双向链表
+		connDeq := connDeque{}
 
-	if conn == nil {
-		fmt.Println("nil")
-	}
+		Convey("异常逻辑：空值弹出", func() {
+			// popBottom
+			for i := 0; i <= 3; i++ {
+				conn := connDeq.popBottom()
+				So(conn, ShouldResemble, (*connInPool)(nil))
+			}
 
-	deque.push(connInPool{address: "1"})
-	deque.push(connInPool{address: "2"})
-	deque.push(connInPool{address: "3"})
+			// pop
+			for i := 0; i <= 3; i++ {
+				conn := connDeq.pop()
+				So(conn, ShouldResemble, (*connInPool)(nil))
+			}
 
-	for i := 0; i < 3; i++ {
-		conn := deque.popBottom()
+			// poll
+			for i := 0; i <= 3; i++ {
+				conn := connDeq.poll()
+				So(conn, ShouldResemble, (*connInPool)(nil))
+			}
+		})
 
-		fmt.Println(conn.address)
-	}
+		//Convey("异常逻辑：空值弹出", func() {
+		//
+		//})
+	})
 }

@@ -33,7 +33,7 @@ func init() {
 
 // ConnOptions 连接池参数结构体
 type ConnOptions struct {
-	initialCap int
+	initialCap int // 初始化连接数（目前还不支持）
 	maxCap     int
 	maxIdle    int // 最大空闲时间  s
 	//idletime    time.Duration

@@ -2,13 +2,21 @@
 # 缩进要用空格
 name: "elgongRPC-config"
 conn:
+    # 初始化连接数，目前时懒加载，因为我懒
     initialCap: 10
-    maxCap: 10
+    # 最大连接数
+    maxCap: 100
+    # 最大空闲连接
     maxIdle: 10
+    # 是否开启掉线自动重连
     failReconnect: true
+    # 重连超时时长
     failReconnectSecond: 5
+    # 重连尝试次数
     failReconnectTime: 1
+    # 是否开启定时任务-健康管理默认开启
     isTickerOpen: true
+    # 健康管理定时时长
     tickerTime: 5
 codec:
     codec-method: msgpack
