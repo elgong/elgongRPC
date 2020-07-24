@@ -20,6 +20,7 @@ func init() {
 		initialCap: config.DefalutGlobalConfig.Conn.InitialCap,
 		maxCap:     config.DefalutGlobalConfig.Conn.MaxCap,  // 0 默认关闭
 		maxIdle:    config.DefalutGlobalConfig.Conn.MaxIdle, // 0 默认关闭
+		timeOut:    config.DefalutGlobalConfig.Conn.TimeOut,
 		//idletime:  1,
 		//maxLifetime: 2,
 		failReconnect:       config.DefalutGlobalConfig.Conn.FailReconnect,
@@ -35,9 +36,11 @@ func init() {
 type ConnOptions struct {
 	initialCap int // 初始化连接数（目前还不支持）
 	maxCap     int
-	maxIdle    int // 最大空闲时间  s
+	maxIdle    int // 最大空闲时间
 	//idletime    time.Duration
 	//maxLifetime time.Duration
+
+	timeOut int // 连接超时时间
 
 	// 超时重连
 	failReconnect       bool // 是否掉线重连

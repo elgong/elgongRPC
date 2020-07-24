@@ -38,6 +38,8 @@ type Config struct {
 		InitialCap int `yaml:"initialCap"`
 		MaxCap     int `yaml:"maxCap"`
 		MaxIdle    int `yaml:"maxIdle"`
+
+		TimeOut int `yaml:"timeout"`
 		//idletime:  1,
 		//maxLifetime: 2,
 		FailReconnect       bool `yaml:"failReconnect"`

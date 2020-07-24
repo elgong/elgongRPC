@@ -1,6 +1,7 @@
 # 冒号后面一定要有空格
 # 缩进要用空格
 name: "elgongRPC-config"
+# 连接池相关的参数
 conn:
     # 初始化连接数，目前时懒加载，因为我懒
     initialCap: 10
@@ -18,6 +19,8 @@ conn:
     isTickerOpen: true
     # 健康管理定时时长
     tickerTime: 5
+    # 建立 tcp 连接 超时时长
+    timeout: 3
 codec:
     codec-method: msgpack
 # 服务相关

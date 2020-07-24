@@ -4,8 +4,6 @@
 // @Update  elgong 2020.7.
 package conn_pool
 
-// 连接池插件 默认的实现版本
-
 import (
 	"errors"
 	"fmt"
@@ -22,7 +20,7 @@ func init() {
 	PluginCenter.Register(pools.Type, pools.Name, &pools)
 }
 
-// ConnInPool 连接池中的具体连接的封装接口
+// ConnInPool 连接池中连接的封装接口,外部也会用到
 type ConnInPool interface {
 	PutBack()                      // 放回池子
 	SetDead()                      // 设置该连接掉线了
@@ -30,7 +28,7 @@ type ConnInPool interface {
 }
 
 // Pools 统一管理的连接池结构体，
-// implement pool 接口
+// 实现了 pool 接口
 type DefaultPools struct {
 	Type    PluginType
 	Name    PluginName
@@ -42,9 +40,8 @@ func (p *DefaultPools) GetConn(address string) (*connInPool, error) {
 	// 如果还未创建连接池
 	if _, OK := p.poolMap.Load(address); !OK {
 		connPoo, err := newConnPool(address)
-
 		if err != nil {
-			return nil, err
+			return nil, errors.New("连接池创建失败")
 		}
 
 		p.poolMap.Store(address, connPoo)
@@ -54,7 +51,7 @@ func (p *DefaultPools) GetConn(address string) (*connInPool, error) {
 	connPoo, isOk := p.poolMap.Load(address)
 	// 获取到连接
 	if isOk {
-		connInpool := connPoo.(connPool).connStack.pop()
+		connInpool := connPoo.(connPool).connDeq.pop()
 		// 如果为空？ 要新建啊
 		if connInpool == nil {
 			return nil, errors.New("无连接")
@@ -77,13 +74,14 @@ type connPool struct {
 	maxIdle    int // 最大的闲置时间
 	//idletime    time.Duration
 	//maxLifetime time.Duration
+	timeOut int // 建立连接超时时间
 
 	// 超时重连
 	failReconnect       bool // 是否掉线重连
 	failReconnectSecond int  // 重连等待时间
 	failReconnectTime   int  // 重连次数
 
-	connStack *connDeque // 连接池底层的链表
+	connDeq *connDeque // 连接池底层的链表
 
 	// 定时器，执行定时管理任务
 	ticker       *time.Ticker
@@ -112,11 +110,14 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 		failReconnectTime:   opt.failReconnectTime,
 		isTickerOpen:        opt.isTickerOpen,
 		tickerTime:          opt.tickerTime,
+		timeOut:             opt.timeOut,
 	}
 
 	// 创建连接链表
-	connStack := connDeque{address: address, cp: &connPoo}
-	conn, err := net.Dial("tcp", address)
+	connDeq := connDeque{address: address, cp: &connPoo}
+
+	// 建立tcp 连接
+	conn, err := net.DialTimeout("tcp", address, time.Second*time.Duration(connPoo.timeOut))
 
 	if err != nil {
 		return connPoo, err
@@ -124,8 +125,8 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 
 	// 创建一个连接
 	cInPool := connInPool{conn, address, &connPoo, time.Now(), nil, nil, true}
-	connStack.push(cInPool)
-	connPoo.connStack = &connStack
+	connDeq.push(cInPool)
+	connPoo.connDeq = &connDeq
 
 	// 如果开启了健康管理
 	if connPoo.isTickerOpen {
@@ -135,30 +136,30 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 		go func(connPoo *connPool) {
 			for _ = range connPoo.ticker.C {
 				// 取出每一个连接，检查是否存活
-				n := connPoo.connStack.getSize()
+				n := connPoo.connDeq.getSize()
 				fmt.Println("connPool healthy manage: have ", n, "conn in pool when ", time.Now())
 
 				// 如果开启了最大闲置连接数限制
 				if connPoo.maxCap > 0 && n > connPoo.maxCap {
 					// 先直接丢弃
 					for i := 0; i < (n - connPoo.maxCap); i++ {
-						connPoo.connStack.popBottom()
+						connPoo.connDeq.popBottom()
 					}
 					// 修改当前n的大小
 					n = n - connPoo.maxCap
 				}
 
 				// 遍历处理 n 次
-				for i := 0; i < n && connPoo.connStack.top != nil; i++ {
+				for i := 0; i < n && connPoo.connDeq.top != nil; i++ {
 					// pop 已经枷锁啦
 					// connPoo.connStack.lock.Lock()
 					// 保证有连接再 pop
-					if connPoo.connStack.getSize() > 0 {
-						cInPool := connPoo.connStack.popBottom()
+					if connPoo.connDeq.getSize() > 0 {
+						cInPool := connPoo.connDeq.popBottom()
 						cInPool.Conn.SetWriteDeadline(time.Now().Add(time.Duration(100) * time.Millisecond))
+
 						// 发送心跳包
 						_, err := cInPool.Conn.Write([]byte{0xaa, 0xbb})
-
 						if err != nil {
 							// 这样会有异常吗，，，，未来再修复吧
 							cInPool.Conn.Close()
@@ -167,12 +168,13 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 
 						// 最大空闲时间
 						if connPoo.maxIdle > 0 && time.Now().Sub(cInPool.updatedtime) >= time.Second*time.Duration(connPoo.maxIdle) {
+							// 空闲连接超时啦, 关闭
+							cInPool.Conn.Close()
 							continue
 						}
 						// 放回去啦
-						connPoo.connStack.push(*cInPool)
+						connPoo.connDeq.push(*cInPool)
 					}
-
 				}
 			}
 		}(&connPoo)
@@ -183,15 +185,15 @@ func newConnPool(address string, opts ...ModifyConnOption) (connPool, error) {
 
 // connDeque 与连接池绑定的底层栈实现
 type connDeque struct {
-	top     *connInPool
-	bottom  *connInPool // 底永远为nil
+	top     *connInPool // 顶
+	bottom  *connInPool // 底
 	lock    sync.Mutex
 	size    int
 	address string
 	cp      *connPool // 指向所属的pool
 }
 
-// push 放入conn
+// push 放入conn 线程安全
 func (c *connDeque) push(inPool connInPool) {
 
 	if &inPool == nil {
@@ -248,10 +250,7 @@ func (c *connDeque) pop() *connInPool {
 	conn.next = nil
 
 	c.size--
-	//conn.updatedtime = time.Now()
-	////////////////// 异常待补充
 	return conn
-
 }
 
 // 队列前端取出  相当于pop
@@ -286,11 +285,10 @@ func (c *connDeque) popBottom() *connInPool {
 	return conn
 }
 
-//getSize 得到大小
+// getSize 得到大小
 func (c *connDeque) getSize() int {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-
 	return c.size
 }
 
@@ -311,7 +309,7 @@ type connInPool struct {
 func (c *connInPool) PutBack() {
 
 	// 最大连接数限制
-	if c.cp.maxCap > 0 && c.cp.connStack.size >= c.cp.maxCap {
+	if c.cp.maxCap > 0 && c.cp.connDeq.size >= c.cp.maxCap {
 		c.Conn.Close()
 	}
 	// 如果连接失效 && 支持超时重连
@@ -327,7 +325,7 @@ func (c *connInPool) PutBack() {
 		return
 	}
 	// 否则，正常逻辑放池子
-	c.cp.connStack.push(*c)
+	c.cp.connDeq.push(*c)
 }
 
 // SetDead 发现连接失效时，修改连接状态，在putback 放回是统一处理
@@ -354,7 +352,7 @@ func (c *connInPool) reconnect() {
 	}
 
 	c.Conn = conn
-	c.cp.connStack.push(*c)
+	c.cp.connDeq.push(*c)
 }
 
 // Send 把数据包循环发送出去
