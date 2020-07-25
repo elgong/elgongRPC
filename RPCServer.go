@@ -24,8 +24,8 @@ func (m *MyService) Add(msg *message.DefalutMsg, msg2 *message.DefalutMsg) {
 	fmt.Println("调用了...Add")
 
 	// 拿到要计算的值
-	fisrt := msg.Body["first"].(int)
-	second := msg.Body["second"].(int)
+	fisrt := msg.Body["first"].(int64)
+	second := msg.Body["second"].(int64)
 
 	res := fisrt + second
 	msg2.Body["res"] = res

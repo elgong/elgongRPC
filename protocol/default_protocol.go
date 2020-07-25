@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/elgong/elgongRPC/config"
+
 	"github.com/elgong/elgongRPC/message"
 
 	"github.com/elgong/elgongRPC/codec"
@@ -31,12 +33,10 @@ type DefaultProtocol struct {
 	Name PluginName
 }
 
-var codecUse PluginName = "gobCodec" // "msgpackCodec" //"gobCodec"
-
 // EncodeMessage 编码到二进制
 func (d DefaultProtocol) EncodeMessage(msgP interface{}) []byte {
 
-	codec := PluginCenter.Get(codec.CodecType, codecUse).(codec.Codec)
+	codec := PluginCenter.Get(codec.CodecType, config.DefalutGlobalConfig.Codec.Codec).(codec.Codec)
 
 	if codec == nil {
 		panic("插件未注册")
@@ -85,7 +85,7 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (interface{}, error) {
 
 	var err error
 	msg := &message.DefalutMsg{} // PluginCenter.Get("msg", "defaultMsg")
-	codec := PluginCenter.Get(codec.CodecType, codecUse).(codec.Codec)
+	codec := PluginCenter.Get(codec.CodecType, config.DefalutGlobalConfig.Codec.Codec).(codec.Codec)
 
 	if codec == nil {
 		panic("插件未注册")

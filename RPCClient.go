@@ -18,7 +18,7 @@ func main() {
 	msg := message.NewMessage()
 	msg.SeqID = 11111
 	msg.MethodName = "method"
-	msg.Body = map[string]interface{}{"first": 1, "second": 2}
+	msg.Body = map[string]interface{}{"first": int64(1), "second": int64(2)}
 	msg.ServiceName = "MyService"
 	msg.MethodName = "Add"
 

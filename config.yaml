@@ -21,8 +21,11 @@ conn:
     tickerTime: 5
     # 建立 tcp 连接 超时时长
     timeout: 3
+
+# 编解码协议： 目前支持两种
 codec:
-    codec-method: msgpack
+    # codec-method: "msgpackCodec"
+    codec-method: "gobCodec"
 # 服务相关
 server:
     ip: 127.0.0.1

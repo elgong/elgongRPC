@@ -40,7 +40,7 @@ func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *messa
 
 	// 服务发现， 发现服务地址，临时先直接赋值代替。
 	// 获取IP 地址
-	call.Address = "127.0.0.1:22222"
+	call.Address = "127.0.0.1:8999"
 
 	r.Send(ctx, call)
 

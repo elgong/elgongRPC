@@ -9,6 +9,8 @@ import (
 	"io/ioutil"
 	"log"
 
+	"github.com/elgong/elgongRPC/plugin_centre"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -47,7 +49,7 @@ type Config struct {
 	}
 
 	Codec struct {
-		Codec string `yaml:"codec-method"`
+		Codec plugin_centre.PluginName `yaml:"codec-method"`
 	}
 
 	Server struct {
