@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -17,8 +16,6 @@ import (
 var DefalutGlobalConfig *Config
 
 func init() {
-	str, _ := os.Getwd()
-	fmt.Println(str)
 	var err error
 	DefalutGlobalConfig, err = Load("./config.yaml")
 

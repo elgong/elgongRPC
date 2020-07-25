@@ -6,7 +6,6 @@ package codec
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
 
 	"github.com/elgong/elgongRPC/message"
 
@@ -31,12 +30,10 @@ func (g GobCodec) Encode(value interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	_, ok := value.(message.DefalutMsg)
 	if ok {
-		fmt.Println("注册")
 		gob.Register(interfaceType{})
 	}
 
 	err := gob.NewEncoder(&buf).Encode(value)
-	fmt.Println(err)
 	return buf.Bytes(), err
 }
 

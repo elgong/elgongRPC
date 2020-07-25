@@ -15,9 +15,20 @@ type MyService struct {
 func (m *MyService) PrintA(msg *message.DefalutMsg, msg2 *message.DefalutMsg) {
 	fmt.Println("调用了...printA")
 
-	fmt.Println(msg)
 	fmt.Println("request:  ", msg.Body)
 	msg2.Body["name"] = "eeeee1111"
+}
+
+// Add 计算两数之和
+func (m *MyService) Add(msg *message.DefalutMsg, msg2 *message.DefalutMsg) {
+	fmt.Println("调用了...Add")
+
+	// 拿到要计算的值
+	fisrt := msg.Body["first"].(int)
+	second := msg.Body["second"].(int)
+
+	res := fisrt + second
+	msg2.Body["res"] = res
 }
 
 func main() {
@@ -29,5 +40,4 @@ func main() {
 
 	// 3. 启动服务
 	server.Server()
-
 }

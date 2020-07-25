@@ -18,16 +18,18 @@ func main() {
 	msg := message.NewMessage()
 	msg.SeqID = 11111
 	msg.MethodName = "method"
-	msg.Body = map[string]interface{}{"name": "elgong"}
+	msg.Body = map[string]interface{}{"first": 1, "second": 2}
 	msg.ServiceName = "MyService"
-	msg.MethodName = "PrintA"
+	msg.MethodName = "Add"
 
 	rsp := message.NewMessage()
-	fmt.Println("发送前", msg)
-	// rpc 调用
-	rpc.Call(context.Background(), msg, &rsp)
 
-	fmt.Println("shoudao ", rsp)
+	for i := 0; i < 10; i++ {
+		// rpc 调用
+		rpc.Call(context.Background(), msg, &rsp)
+
+		fmt.Println("call return res: ", rsp.Body["res"])
+	}
 
 	// 阻塞
 	select {}
