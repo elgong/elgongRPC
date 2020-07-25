@@ -4,6 +4,8 @@
 package loadbalance
 
 import (
+	"math/rand"
+
 	. "github.com/elgong/elgongRPC/plugin_centre"
 )
 
@@ -19,9 +21,8 @@ type DefaultSelector struct {
 	Name PluginName
 }
 
-// Select 负载均衡，从[]中获取其中一个
+// Select 负载均衡，从[]中随机获取其中一个
 func (s *DefaultSelector) Select(serviceList []string) string {
-
-	return serviceList[0]
-
+	randNum := rand.Intn(len(serviceList))
+	return serviceList[randNum]
 }
