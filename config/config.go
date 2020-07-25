@@ -19,7 +19,7 @@ func init() {
 
 	var err error
 	DefalutGlobalConfig, err = Load("./config.yaml")
-
+	fmt.Println(DefalutGlobalConfig)
 	if err != nil {
 		panic("参数解析异常")
 	}
@@ -27,7 +27,18 @@ func init() {
 }
 
 type Config struct {
+
+	// 服务端和客户端公共的配值
 	Name string `yaml:"name"`
+
+	CodecPlugin    string `yaml:"codecPlugin"`
+	ProtocolPlugin string `yaml:"protocolPlugin"`
+
+	// 客户端的配置
+	SelectorPlugin string `yaml:"selectorPlugin"`
+	DiscoveyPlugin string `yaml:"discoveyPlugin"`
+	ConnPlugin     string `yaml:"connPlugin"`
+
 	Conn struct {
 		MaxConn string `yaml:"maxConn"`
 		MinConn string `yaml:"minConn"`
@@ -45,19 +56,14 @@ type Config struct {
 		TickerTime          int  `yaml:"tickerTime"`
 	}
 
-	Codec struct {
-		Codec string `yaml:"codec-method"`
-	}
+	// 客户端手动指定的 服务名 ：【地址】
+	Services map[string][]string `yaml:"services"`
 
+	// 服务端的配置
 	Server struct {
-		//Servicename   string `yaml:"servicename"`
-		//Servicemethod string `yaml:"servicemethod"`
 		Ip   string `yaml:"ip"`
 		Port string `yaml:"port"`
 	}
-
-	// 服务名 ：【地址】
-	Services map[string][]string `yaml:"services"`
 }
 
 // Load 解析配置参数

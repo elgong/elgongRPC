@@ -36,7 +36,7 @@ type DefaultProtocol struct {
 // EncodeMessage 编码到二进制
 func (d DefaultProtocol) EncodeMessage(msgP interface{}) []byte {
 
-	codec := PluginCenter.Get(codec.CodecType, PluginName(config.DefalutGlobalConfig.Codec.Codec)).(codec.Codec)
+	codec := PluginCenter.Get(codec.CodecType, PluginName(config.DefalutGlobalConfig.CodecPlugin)).(codec.Codec)
 
 	if codec == nil {
 		panic("插件未注册")
@@ -85,7 +85,7 @@ func (d DefaultProtocol) DecodeMessage(r io.Reader) (interface{}, error) {
 
 	var err error
 	msg := &message.DefalutMsg{} // PluginCenter.Get("msg", "defaultMsg")
-	codec := PluginCenter.Get(codec.CodecType, PluginName(config.DefalutGlobalConfig.Codec.Codec)).(codec.Codec)
+	codec := PluginCenter.Get(codec.CodecType, PluginName(config.DefalutGlobalConfig.CodecPlugin)).(codec.Codec)
 
 	if codec == nil {
 		panic("插件未注册")

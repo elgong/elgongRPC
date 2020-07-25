@@ -9,13 +9,13 @@ import (
 )
 
 func init() {
-	defaultDiscovey := DefaultDiscovey{services2Ip: config.DefalutGlobalConfig.Services}
+	defaultDiscovey := DefaultDiscovey{DiscoveyType, "defaultDiscovey", config.DefalutGlobalConfig.Services}
 	PluginCenter.Register(defaultDiscovey.Typ, defaultDiscovey.Name, &defaultDiscovey)
 }
 
 type DefaultDiscovey struct {
-	Name        PluginName
 	Typ         PluginType
+	Name        PluginName
 	services2Ip map[string][]string
 }
 

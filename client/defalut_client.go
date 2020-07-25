@@ -7,6 +7,12 @@ import (
 	"log"
 	"sync"
 
+	"github.com/elgong/elgongRPC/config"
+
+	"github.com/elgong/elgongRPC/soa/loadbalance"
+
+	"github.com/elgong/elgongRPC/soa/discovey"
+
 	"github.com/elgong/elgongRPC/message"
 
 	. "github.com/elgong/elgongRPC/conn_pool"
@@ -38,10 +44,18 @@ func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *messa
 	call := &Call{}
 	call.Request = reqBody
 
-	// 服务发现， 发现服务地址，临时先直接赋值代替。
-	// 获取IP 地址
-	call.Address = "127.0.0.1:8999"
+	// 服务发现插件
+	discoveyPlugin := PluginCenter.Get("discovey", PluginName(config.DefalutGlobalConfig.DiscoveyPlugin)).(discovey.Discovey)
 
+	serviceList := discoveyPlugin.Get(call.Request.(message.DefalutMsg).ServiceName)
+
+	// 负载均衡插件
+	selector := PluginCenter.Get("selector", PluginName(config.DefalutGlobalConfig.SelectorPlugin)).(loadbalance.Selector)
+
+	// 经过负载均衡选择的地址
+	call.Address = selector.Select(serviceList)
+
+	// 发送消息
 	r.Send(ctx, call)
 
 	// 解析服务的返回值
@@ -51,19 +65,16 @@ func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *messa
 
 func (r RPCClient) Send(ctx context.Context, call *Call) {
 
-	//seq := r.seq
-	//r.pendingCalls.Store(seq, call)
-
 	request := call.Request
 
 	// 从插件管理中心 获取protocol 协议的编解码器
-	proto := PluginCenter.Get("protocol", "defaultProtocol").(protocol.Protocol)
+	proto := PluginCenter.Get("protocol", PluginName(config.DefalutGlobalConfig.ProtocolPlugin)).(protocol.Protocol)
 
 	// 编码要发送的数据
 	requestByte := proto.EncodeMessage(request)
 
-	// 从连接池拿到 conn连接
-	conn, err := PluginCenter.Get("connPool", "defaultConnPool").(*DefaultPools).GetConn(call.Address)
+	// 获取连接池插件，从连接池拿到 conn连接
+	conn, err := PluginCenter.Get("connPool", PluginName(config.DefalutGlobalConfig.ConnPlugin)).(*DefaultPools).GetConn(call.Address)
 	defer conn.PutBack()
 	if err != nil {
 		log.Println("网络异常:" + err.Error())
@@ -107,58 +118,3 @@ type Call struct {
 func (c *Call) done() {
 	c.Done <- c
 }
-
-//func (r *RPCClient) Go(ctx context.Context, request interface{}, response interface{}, done chan *Call) *Call {
-//	call := new(Call)
-//	call.ServiceMethod = request.(*protocol.DefalutMsg).MethodName
-//	call.ServiceName = request.(*protocol.DefalutMsg).ServiceName
-//	call.Request = request
-//	call.Response = response
-//	call.address = "127.0.0.1:22221"
-//
-//	if done == nil {
-//		done = make(chan *Call, 10) // buffered.
-//	} else {
-//		if cap(done) == 0 {
-//			log.Panic("rpc: done channel is unbuffered")
-//		}
-//	}
-//	call.Done = done
-//
-//	r.send(ctx, call)
-//
-//	return call
-//}
-
-//func (r RPCClient) input() {
-//	var err error
-//	var rsp interface{}
-//	for err == nil {
-//		rsp, err = PluginCenter.Get("protocol", "defaultProtocol").(protocol.Protocol).DecodeMessage(r.rwc)
-//		if err != nil {
-//			break
-//		}
-//		response := rsp.(*protocol.DefalutMsg)
-//		seq := response.SeqID
-//		callInterface, ok := r.pendingCalls.Load(seq)
-//		if !ok {
-//			//请求已经被清理掉了，可能是已经超时了
-//			continue
-//		}
-//
-//		call := callInterface.(*Call)
-//
-//		r.pendingCalls.Delete(seq)
-//
-//		switch {
-//		case response.Error != "":
-//			call.Error = errors.New("服务器响应错误")
-//			call.done()
-//		default:
-//			call.Response = response
-//			call.done()
-//		}
-//	}
-//	log.Println("input error, closing client, error: " + err.Error())
-//	// r.Close()
-//}

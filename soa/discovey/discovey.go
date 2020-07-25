@@ -3,6 +3,8 @@
 // @Update  elgong 2020.7.25
 package discovey
 
+const DiscoveyType = "discovey"
+
 type Discovey interface {
 	Get(serviceName string) []string
 }
