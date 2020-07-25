@@ -18,8 +18,21 @@ var typeOfError = reflect.TypeOf((*error)(nil)).Elem()
 var typeOfContext = reflect.TypeOf((*context.Context)(nil)).Elem()
 
 // NewRPCServer 创建并返回server
-func NewRPCServer() *RPCServer {
+func NewRPCServer(opts ...ModifyServerOptions) *RPCServer {
+
+	// opt 默认参数
+	var opt = defaultServerOptions
+
+	// 修改参数
+	for _, o := range opts {
+		o(&opt)
+	}
+
 	s := new(RPCServer)
+
+	s.ip = opt.Ip
+	s.port = opt.Port
+
 	s.serviceMap = make(map[string]*Service)
 	return s
 }
@@ -29,9 +42,10 @@ type RPCServer struct {
 	// 服务的map 容器
 	serviceMap map[string]*Service
 	mutex      sync.Mutex
-
 	// 是否关闭
 	shutdown bool
+	ip       string
+	port     string
 }
 
 // Register 注册服务到容器中
@@ -65,7 +79,7 @@ func (r *RPCServer) Invoke(serviceName string, methodName string, args interface
 
 func (r *RPCServer) Server() {
 	//1.建立监听端口
-	listen, err := net.Listen("tcp", "127.0.0.1:22222")
+	listen, err := net.Listen("tcp", r.ip+":"+r.port)
 	if err != nil {
 		fmt.Println("listen failed, err:", err)
 		return

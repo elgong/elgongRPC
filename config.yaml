@@ -25,6 +25,5 @@ codec:
     codec-method: msgpack
 # 服务相关
 server:
-    servicename: hello
-    servicemethod: printa
-    ip: 127.0.0.1:8999
+    ip: 127.0.0.1
+    port: 8999

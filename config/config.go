@@ -51,9 +51,10 @@ type Config struct {
 	}
 
 	Server struct {
-		Servicename   string `yaml:"servicename"`
-		Servicemethod string `yaml:"servicemethod"`
-		Ip            string `yaml:"ip"`
+		//Servicename   string `yaml:"servicename"`
+		//Servicemethod string `yaml:"servicemethod"`
+		Ip   string `yaml:"ip"`
+		Port string `yaml:"port"`
 	}
 }
 
