@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/elgong/elgongRPC/message"
+
 	"github.com/elgong/elgongRPC/codec"
 	. "github.com/elgong/elgongRPC/plugin_centre"
 )
@@ -19,7 +21,6 @@ var rpcVersion = "v1.0"
 
 // 注册插件到 插件管理中心
 func init() {
-
 	deafultProtocol := DefaultProtocol{ProtocolType, "defaultProtocol"}
 	PluginCenter.Register(deafultProtocol.Type, deafultProtocol.Name, &deafultProtocol)
 }
@@ -30,16 +31,18 @@ type DefaultProtocol struct {
 	Name PluginName
 }
 
+var codecUse PluginName = "gobCodec" // "msgpackCodec" //"gobCodec"
+
 // EncodeMessage 编码到二进制
-func (d DefaultProtocol) EncodeMessage(message interface{}) []byte {
-	//
-	codec := PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec)
+func (d DefaultProtocol) EncodeMessage(msgP interface{}) []byte {
+
+	codec := PluginCenter.Get(codec.CodecType, codecUse).(codec.Codec)
 
 	if codec == nil {
 		panic("插件未注册")
 	}
 
-	msg, err := codec.Encode(message)
+	msg, err := codec.Encode(msgP.(message.DefalutMsg))
 	if err != nil {
 		panic("编码信息失败")
 	}
@@ -81,8 +84,8 @@ func (d DefaultProtocol) EncodeMessage(message interface{}) []byte {
 func (d DefaultProtocol) DecodeMessage(r io.Reader) (interface{}, error) {
 
 	var err error
-	msg := &DefalutMsg{} // PluginCenter.Get("msg", "defaultMsg")
-	codec := PluginCenter.Get(codec.CodecType, "msgpackCodec").(codec.Codec)
+	msg := &message.DefalutMsg{} // PluginCenter.Get("msg", "defaultMsg")
+	codec := PluginCenter.Get(codec.CodecType, codecUse).(codec.Codec)
 
 	if codec == nil {
 		panic("插件未注册")

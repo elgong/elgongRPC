@@ -7,6 +7,8 @@ import (
 	"log"
 	"sync"
 
+	"github.com/elgong/elgongRPC/message"
+
 	. "github.com/elgong/elgongRPC/conn_pool"
 	. "github.com/elgong/elgongRPC/plugin_centre"
 	"github.com/elgong/elgongRPC/protocol"
@@ -31,19 +33,19 @@ func (r RPCClient) IsShutDown() bool {
 }
 
 // Call 调用服务后端
-func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *protocol.DefalutMsg) {
+func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *message.DefalutMsg) {
 	// 对req 的封装，封装一个call，方便后续实现异步时使用
 	call := &Call{}
 	call.Request = reqBody
 
 	// 服务发现， 发现服务地址，临时先直接赋值代替。
 	// 获取IP 地址
-	call.Address = "127.0.0.1:22221"
+	call.Address = "127.0.0.1:22222"
 
 	r.Send(ctx, call)
 
 	// 解析服务的返回值
-	*rspBody = *call.Response.(*protocol.DefalutMsg)
+	*rspBody = *call.Response.(*message.DefalutMsg)
 
 }
 

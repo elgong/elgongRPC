@@ -10,6 +10,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/elgong/elgongRPC/message"
+
 	. "github.com/elgong/elgongRPC/protocol"
 
 	. "github.com/elgong/elgongRPC/plugin_centre"
@@ -63,7 +65,7 @@ func (r *RPCServer) Invoke(serviceName string, methodName string, args interface
 
 func (r *RPCServer) Server() {
 	//1.建立监听端口
-	listen, err := net.Listen("tcp", "127.0.0.1:22221")
+	listen, err := net.Listen("tcp", "127.0.0.1:22222")
 	if err != nil {
 		fmt.Println("listen failed, err:", err)
 		return
@@ -101,10 +103,10 @@ func (r *RPCServer) handlerConn(conn *net.Conn) {
 
 		fmt.Println("server shoudao :  ", msg)
 
-		m := msg.(*DefalutMsg)
+		m := msg.(*message.DefalutMsg)
 
 		// 必须一个完整的数据////////////////////////////////
-		response := DefalutMsg{Body: map[string]string{
+		response := message.DefalutMsg{Body: map[string]interface{}{
 			"name": "111111",
 		}}
 		// 调用

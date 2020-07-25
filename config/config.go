@@ -20,7 +20,7 @@ func init() {
 	str, _ := os.Getwd()
 	fmt.Println(str)
 	var err error
-	DefalutGlobalConfig, err = Load("../config.yaml")
+	DefalutGlobalConfig, err = Load("./config.yaml")
 
 	if err != nil {
 		panic("参数解析异常")

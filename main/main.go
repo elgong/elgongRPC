@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/elgong/elgongRPC/protocol"
-
 	_ "github.com/elgong/elgongRPC/codec"
+	"github.com/elgong/elgongRPC/message"
 	"github.com/elgong/elgongRPC/server"
 )
 
@@ -44,7 +43,7 @@ func main() {
 	//
 	//fmt.Println(s)
 
-	msg := protocol.NewMessage()
+	msg := message.NewMessage()
 	msg.SeqID = 11111
 	msg.MethodName = "method"
 	msg.Body = map[string]string{"name": "elgong"}

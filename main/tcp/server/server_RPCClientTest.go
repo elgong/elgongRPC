@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/elgong/elgongRPC/message"
+
 	. "github.com/elgong/elgongRPC/plugin_centre"
 	. "github.com/elgong/elgongRPC/protocol"
 
@@ -39,7 +41,7 @@ func main() {
 			fmt.Println("-------------")
 			fmt.Println("server shoudao :  ", msg)
 
-			m := msg.(*DefalutMsg)
+			m := msg.(*message.DefalutMsg)
 			m.ServiceName = "shoudesdsa dsad sads dasdsad "
 
 			//byt := PluginCenter.Get("protocol", "defaultProtocol").(protocol.Protocol).EncodeMessage(m)

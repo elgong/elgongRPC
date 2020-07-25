@@ -6,6 +6,9 @@ package codec
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
+
+	"github.com/elgong/elgongRPC/message"
 
 	. "github.com/elgong/elgongRPC/plugin_centre"
 )
@@ -21,13 +24,25 @@ type GobCodec struct {
 	Name PluginName
 }
 
+// body 类型单独注册
+type interfaceType = map[string]interface{}
+
 func (g GobCodec) Encode(value interface{}) ([]byte, error) {
 	var buf bytes.Buffer
+	_, ok := value.(message.DefalutMsg)
+	if ok {
+		fmt.Println("注册")
+		gob.Register(interfaceType{})
+	}
+
 	err := gob.NewEncoder(&buf).Encode(value)
+	fmt.Println(err)
 	return buf.Bytes(), err
 }
 
 func (g GobCodec) Decode(data []byte, value interface{}) error {
+
+	gob.Register(interfaceType{})
 	buf := bytes.NewBuffer(data)
 	err := gob.NewDecoder(buf).Decode(value)
 	return err
