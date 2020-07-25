@@ -9,8 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/elgong/elgongRPC/plugin_centre"
-
 	"gopkg.in/yaml.v2"
 )
 
@@ -18,13 +16,13 @@ import (
 var DefalutGlobalConfig *Config
 
 func init() {
+
 	var err error
 	DefalutGlobalConfig, err = Load("./config.yaml")
 
 	if err != nil {
 		panic("参数解析异常")
 	}
-
 	fmt.Println("参数加载成功:", DefalutGlobalConfig.Name)
 }
 
@@ -39,8 +37,7 @@ type Config struct {
 		MaxIdle    int `yaml:"maxIdle"`
 
 		TimeOut int `yaml:"timeout"`
-		//idletime:  1,
-		//maxLifetime: 2,
+
 		FailReconnect       bool `yaml:"failReconnect"`
 		FailReconnectSecond int  `yaml:"failReconnectSecond"`
 		FailReconnectTime   int  `yaml:"failReconnectTime"`
@@ -49,7 +46,7 @@ type Config struct {
 	}
 
 	Codec struct {
-		Codec plugin_centre.PluginName `yaml:"codec-method"`
+		Codec string `yaml:"codec-method"`
 	}
 
 	Server struct {
@@ -58,6 +55,9 @@ type Config struct {
 		Ip   string `yaml:"ip"`
 		Port string `yaml:"port"`
 	}
+
+	// 服务名 ：【地址】
+	Services map[string][]string `yaml:"services"`
 }
 
 // Load 解析配置参数

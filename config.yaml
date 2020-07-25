@@ -1,7 +1,23 @@
 # 冒号后面一定要有空格
 # 缩进要用空格
+
+# 公共配置
 name: "elgongRPC-config"
 # 连接池相关的参数
+
+# 编解码协议： 目前支持两种
+codec:
+    # codec-method: "msgpackCodec"
+    codec-method: "gobCodec"
+
+
+# 服务端使用的配置
+# 指定要监听的端口
+server:
+    ip: 127.0.0.1
+    port: 8999
+
+# 客户端使用的配置
 conn:
     # 初始化连接数，目前时懒加载，因为我懒
     initialCap: 10
@@ -22,11 +38,9 @@ conn:
     # 建立 tcp 连接 超时时长
     timeout: 3
 
-# 编解码协议： 目前支持两种
-codec:
-    # codec-method: "msgpackCodec"
-    codec-method: "gobCodec"
-# 服务相关
-server:
-    ip: 127.0.0.1
-    port: 8999
+# 手动指定服务器的。。。
+services:
+    MyService : ["127.0.0.1:8999","127.0.0.1:8990"]
+    NoUseService : ["0.0.0.0:8990"]
+
+
