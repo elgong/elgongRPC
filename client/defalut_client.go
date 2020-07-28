@@ -40,6 +40,13 @@ func (r RPCClient) IsShutDown() bool {
 
 // Call 调用服务后端
 func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *message.DefalutMsg) {
+
+	select {
+	case <-ctx.Done():
+		fmt.Println("停止了...")
+		return
+	default:
+	}
 	// 对req 的封装，封装一个call，方便后续实现异步时使用
 	call := &Call{}
 	call.Request = reqBody
@@ -47,12 +54,13 @@ func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *messa
 	// 服务发现插件
 	discoveyPlugin := PluginCenter.Get("discovey", PluginName(config.DefalutGlobalConfig.DiscoveyPlugin)).(discovey.Discovey)
 
+	// 获得可用的服务ip列表
 	serviceList := discoveyPlugin.Get(call.Request.(message.DefalutMsg).ServiceName)
 
 	// 负载均衡插件
 	selector := PluginCenter.Get("selector", PluginName(config.DefalutGlobalConfig.SelectorPlugin)).(loadbalance.Selector)
 
-	// 经过负载均衡选择的地址
+	// 经过负载均衡选择的ip地址
 	call.Address = selector.Select(serviceList)
 
 	// 发送消息
@@ -64,7 +72,12 @@ func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *messa
 }
 
 func (r RPCClient) Send(ctx context.Context, call *Call) {
-
+	select {
+	case <-ctx.Done():
+		fmt.Println("停止了...")
+		return
+	default:
+	}
 	request := call.Request
 
 	// 从插件管理中心 获取protocol 协议的编解码器
@@ -74,7 +87,7 @@ func (r RPCClient) Send(ctx context.Context, call *Call) {
 	requestByte := proto.EncodeMessage(request)
 
 	// 获取连接池插件，从连接池拿到 conn连接
-	conn, err := PluginCenter.Get("connPool", PluginName(config.DefalutGlobalConfig.ConnPlugin)).(*DefaultPools).GetConn(call.Address)
+	conn, err := PluginCenter.Get("connPool", PluginName(config.DefalutGlobalConfig.ConnPlugin)).(*DefaultPools).GetConn(ctx, call.Address)
 	defer conn.PutBack()
 	if err != nil {
 		log.Println("网络异常:" + err.Error())

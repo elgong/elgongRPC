@@ -5,6 +5,7 @@
 package conn_pool
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -36,7 +37,14 @@ type DefaultPools struct {
 }
 
 // todo: 需要异常补充
-func (p *DefaultPools) GetConn(address string) (*connInPool, error) {
+func (p *DefaultPools) GetConn(ctx context.Context, address string) (*connInPool, error) {
+	select {
+	case <-ctx.Done():
+		fmt.Println("停止了...")
+		return nil, nil
+	default:
+	}
+
 	// 如果还未创建连接池
 	if _, OK := p.poolMap.Load(address); !OK {
 		connPoo, err := newConnPool(address)
