@@ -57,6 +57,8 @@ func (r RPCClient) Call(ctx context.Context, reqBody interface{}, rspBody *messa
 	// 获得可用的服务ip列表
 	serviceList := discoveyPlugin.Get(call.Request.(message.DefalutMsg).ServiceName)
 
+	fmt.Println(serviceList)
+
 	// 负载均衡插件
 	selector := PluginCenter.Get("selector", PluginName(config.DefalutGlobalConfig.SelectorPlugin)).(loadbalance.Selector)
 

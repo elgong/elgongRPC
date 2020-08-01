@@ -64,6 +64,8 @@ type Config struct {
 		Ip   string `yaml:"ip"`
 		Port string `yaml:"port"`
 	}
+
+	RegisterPlugin string `yaml:"registerPlugin"`
 }
 
 // Load 解析配置参数

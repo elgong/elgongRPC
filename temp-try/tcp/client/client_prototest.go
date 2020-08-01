@@ -12,7 +12,7 @@ import (
 
 func main() {
 	//1.建立一个链接（Dial拨号）
-	conn, err := net.Dial("tcp", "127.0.0.1:22222")
+	conn, err := net.Dial("tcp", "192.168.43.123:8999")
 
 	if err != nil {
 		fmt.Println("errrrrr")

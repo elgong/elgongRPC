@@ -6,7 +6,6 @@ package redisPlugin
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/elgong/elgongRPC/soa/register"
@@ -17,9 +16,10 @@ import (
 )
 
 func init() {
-	redis := RedisRegister{register.RegisterType, "redisPlugin"}
+	fmt.Println("注册 redisRegisterPlugin")
+	redis := RedisRegister{register.RegisterType, "redisRegisterPlugin"}
 
-	PluginCenter.Register(redis.Type, PluginName(redis.Type), &redis)
+	PluginCenter.Register(redis.Type, PluginName(redis.Name), &redis)
 }
 
 // RedisRegister redis 注册插件
@@ -30,30 +30,30 @@ type RedisRegister struct {
 
 // Register 实现注册
 // 定时更新状态, 放在redis 的 set 中，  由对应的客户端来
-func (r *RedisRegister) Register(ctx context.Context, serviceName string, Ip string, opts ...ModifyRedisOptions) {
+func (r RedisRegister) Register(ctx context.Context, serviceName string, Ip string) error {
 
 	// opt 默认参数
 	var redisOpt = defaultRedisOptions
 	// 根据传入参数调整
-	for _, o := range opts {
-		o(&redisOpt)
-	}
+	//for _, o := range opts {
+	//	o(&redisOpt)
+	//}
 
 	// 连接redis数据库,指定数据库的IP和端口
 	opt := redis.DialPassword(redisOpt.password)
 	conn, err := redis.Dial("tcp", redisOpt.ip, opt)
 
-	defer conn.Close()
+	// defer conn.Close()
 
 	if err != nil {
 		fmt.Println("Connect to redis error", err)
-		return
+		return err
 	}
 	// 定时时长
-	ticker := time.NewTicker(time.Second * time.Duration(redisOpt.time))
+	ticker := time.NewTicker(time.Millisecond * time.Duration(redisOpt.clientTime))
 
-	wait := sync.WaitGroup{}
-	wait.Add(1)
+	//wait := sync.WaitGroup{}
+	//wait.Add(1)
 
 	// 定时任务
 	go func(ctx context.Context) {
@@ -65,15 +65,15 @@ func (r *RedisRegister) Register(ctx context.Context, serviceName string, Ip str
 			default:
 			}
 			// 注册到redis 的  set 中
-			_, err = conn.Do("SADD", "namespace_"+serviceName, Ip)
+			_, err = conn.Do("sadd", "namespace_"+serviceName, Ip)
 			if err != nil {
 				fmt.Println("redis set failed:", err)
 			}
 		}
-		wait.Done()
+		//wait.Done()
 	}(ctx)
 
-	wait.Wait()
+	//wait.Wait()
 	fmt.Println("上报结束")
-
+	return nil
 }

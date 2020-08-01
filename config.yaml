@@ -13,7 +13,7 @@ protocolPlugin: "defaultProtocol"
 # 服务端使用的配置
 # 指定要监听的端口
 server:
-    ip: 127.0.0.1
+    ip: 192.168.43.123
     port: 8999
 
 
@@ -44,14 +44,22 @@ conn:
 # 手动录入服务部署机器的IP 列表
 services:
     # 服务名：[ip, ip...]
-    MyService : ["127.0.0.1:8999","127.0.0.1:8990"]
+    MyService : ["192.168.43.123:8999"]
     NoUseService : ["0.0.0.0:8990"]
 
 # 负载均衡插件
 selectorPlugin: "defaultSelector"
 
+# 服务注册插件
+#  使用该插件，需要服务端函数导入，执行初始化哈  _ "github.com/elgong/elgongRPC/soa/register/redisPlugin"
+registerPlugin: "redisRegisterPlugin"  # 需要和服务发现redis 一起使用
+
 # 服务发现插件
-discoveyPlugin: "defaultDiscovey"
+#discoveyPlugin: "defaultDiscovey"
+discoveyPlugin: "redisDiscoveyPlugin"
+
+
+
 
 
 

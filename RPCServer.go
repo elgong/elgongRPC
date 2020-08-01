@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	_ "github.com/elgong/elgongRPC/soa/register/redisPlugin"
+
 	"github.com/elgong/elgongRPC/message"
 
 	"github.com/elgong/elgongRPC/server"
@@ -13,6 +15,7 @@ type MyService struct {
 
 // 这里入参和出餐的断言有问题哦
 func (m *MyService) PrintA(msg *message.DefalutMsg, msg2 *message.DefalutMsg) {
+
 	fmt.Println("调用了...printA")
 
 	fmt.Println("request:  ", msg.Body)

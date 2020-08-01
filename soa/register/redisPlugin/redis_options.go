@@ -6,14 +6,11 @@ package redisPlugin
 
 import "regexp"
 
-var defaultRedisOptions RedisOptions
-
-func init() {
-	defaultRedisOptions = RedisOptions{
-		ip:          "127.0.0.1:6379",
-		serviceName: "test",
-		password:    "1234",
-	}
+var defaultRedisOptions = RedisOptions{
+	ip:          "121.41.111.45:6379",
+	serviceName: "test",
+	password:    "Gelqq666%",
+	clientTime:  200, // 毫秒
 }
 
 // ConnOptions 连接池参数结构体
@@ -24,8 +21,8 @@ type RedisOptions struct {
 	serviceName string
 	// 密码
 	password string
-	// 上报时间间隔 1s
-	time int
+	// client上报时间间隔 毫秒
+	clientTime int
 }
 
 //
@@ -45,7 +42,7 @@ func WithIP(Ip string) ModifyRedisOptions {
 	}
 }
 
-func WithServiceName(serviceName string) ModifyConnOption {
+func WithServiceName(serviceName string) ModifyRedisOptions {
 
 	// opt *Options 传入待修改的参数指针
 	return func(opt *RedisOptions) {
@@ -53,7 +50,7 @@ func WithServiceName(serviceName string) ModifyConnOption {
 	}
 }
 
-func WithPassword(password string) ModifyConnOption {
+func WithPassword(password string) ModifyRedisOptions {
 
 	// opt *Options 传入待修改的参数指针
 	return func(opt *RedisOptions) {

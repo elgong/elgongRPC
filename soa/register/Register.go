@@ -3,10 +3,12 @@
 // @Update  elgong 2020.7.29
 package register
 
+import "context"
+
 const RegisterType = "register"
 
 // Register 服务注册接口
 type Register interface {
 	// Ip 包含端口号
-	Register(serviceName string, Ip string) error
+	Register(context context.Context, serviceName string, Ip string) error
 }

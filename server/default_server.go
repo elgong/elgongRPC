@@ -7,6 +7,11 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/elgong/elgongRPC/common"
+
+	"github.com/elgong/elgongRPC/config"
+	"github.com/elgong/elgongRPC/soa/register"
+
 	"github.com/elgong/elgongRPC/message"
 
 	. "github.com/elgong/elgongRPC/protocol"
@@ -70,6 +75,17 @@ func (r *RPCServer) Register(servcieName string, serviceImpl interface{}) {
 		r.serviceMap[service.serviceName] = service
 	}
 	r.mutex.Unlock()
+
+	// 服务注册到 服务中心
+	if len(config.DefalutGlobalConfig.RegisterPlugin) > 0 {
+		// 先注册
+		registerr := PluginCenter.Get(register.RegisterType, PluginName(config.DefalutGlobalConfig.RegisterPlugin)).(register.Register)
+		ip, err := common.GetClientIp()
+		if err != nil {
+			panic("IP 获取错误")
+		}
+		registerr.Register(context.Background(), servcieName, ip+":"+config.DefalutGlobalConfig.Server.Port)
+	}
 }
 
 // Invoke 服务的方法调用

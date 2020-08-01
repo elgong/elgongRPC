@@ -7,6 +7,7 @@ import (
 	"github.com/elgong/elgongRPC/message"
 
 	. "github.com/elgong/elgongRPC/client"
+	_ "github.com/elgong/elgongRPC/soa/register/redisPlugin"
 )
 
 func main() {
