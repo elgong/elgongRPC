@@ -29,6 +29,7 @@ type RedisRegister struct {
 }
 
 // Register 实现注册
+// 定时更新状态, 放在redis 的 set 中，  由对应的客户端来
 func (r *RedisRegister) Register(ctx context.Context, serviceName string, Ip string, opts ...ModifyRedisOptions) {
 
 	// opt 默认参数
@@ -41,6 +42,7 @@ func (r *RedisRegister) Register(ctx context.Context, serviceName string, Ip str
 	// 连接redis数据库,指定数据库的IP和端口
 	opt := redis.DialPassword(redisOpt.password)
 	conn, err := redis.Dial("tcp", redisOpt.ip, opt)
+
 	defer conn.Close()
 
 	if err != nil {
@@ -52,17 +54,18 @@ func (r *RedisRegister) Register(ctx context.Context, serviceName string, Ip str
 
 	wait := sync.WaitGroup{}
 	wait.Add(1)
+
+	// 定时任务
 	go func(ctx context.Context) {
 		for _ = range ticker.C {
-
 			select {
 			case <-ctx.Done():
 				fmt.Println("停止了...")
 				return
 			default:
 			}
-
-			_, err = conn.Do("SET", "mykey", "superRobot")
+			// 注册到redis 的  set 中
+			_, err = conn.Do("SADD", "namespace_"+serviceName, Ip)
 			if err != nil {
 				fmt.Println("redis set failed:", err)
 			}
