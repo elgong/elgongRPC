@@ -23,6 +23,10 @@ type DefaultSelector struct {
 
 // Select 负载均衡，从[]中随机获取其中一个
 func (s *DefaultSelector) Select(serviceList []string) string {
+
+	if len(serviceList) == 0 {
+		return ""
+	}
 	randNum := rand.Intn(len(serviceList))
 	return serviceList[randNum]
 }

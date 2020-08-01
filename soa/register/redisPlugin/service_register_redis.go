@@ -6,6 +6,7 @@ package redisPlugin
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/elgong/elgongRPC/soa/register"
@@ -16,7 +17,7 @@ import (
 )
 
 func init() {
-	fmt.Println("注册 redisRegisterPlugin")
+	log.Println("注册 redisRegisterPlugin")
 	redis := RedisRegister{register.RegisterType, "redisRegisterPlugin"}
 
 	PluginCenter.Register(redis.Type, PluginName(redis.Name), &redis)
@@ -43,10 +44,8 @@ func (r RedisRegister) Register(ctx context.Context, serviceName string, Ip stri
 	opt := redis.DialPassword(redisOpt.password)
 	conn, err := redis.Dial("tcp", redisOpt.ip, opt)
 
-	// defer conn.Close()
-
 	if err != nil {
-		fmt.Println("Connect to redis error", err)
+		log.Println("Connect to redis error", err)
 		return err
 	}
 	// 定时时长
@@ -67,13 +66,13 @@ func (r RedisRegister) Register(ctx context.Context, serviceName string, Ip stri
 			// 注册到redis 的  set 中
 			_, err = conn.Do("sadd", "namespace_"+serviceName, Ip)
 			if err != nil {
-				fmt.Println("redis set failed:", err)
+				log.Println("redis set failed:", err)
 			}
 		}
 		//wait.Done()
 	}(ctx)
 
 	//wait.Wait()
-	fmt.Println("上报结束")
+	log.Println("上报结束")
 	return nil
 }

@@ -7,4 +7,5 @@ const DiscoveyType = "discovey"
 
 type Discovey interface {
 	Get(serviceName string) []string
+	ReportAndRemove(serviceName string, ip string)
 }

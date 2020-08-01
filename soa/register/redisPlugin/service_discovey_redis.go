@@ -4,7 +4,7 @@
 package redisPlugin
 
 import (
-	"fmt"
+	"log"
 
 	. "github.com/elgong/elgongRPC/plugin_centre"
 	"github.com/elgong/elgongRPC/soa/discovey"
@@ -18,7 +18,7 @@ func init() {
 
 	conn, err := redis.Dial("tcp", defaultRedisOptions.ip, opt)
 	if err != nil {
-		fmt.Println("Connect to redis error", err)
+		log.Println("Connect to redis error", err)
 		panic("Redis Connect to redis error")
 	}
 	redisDiscovey := RedisDiscovey{discovey.DiscoveyType, "redisDiscoveyPlugin", []string{}, conn}
@@ -43,12 +43,18 @@ func (r RedisDiscovey) Get(serviceName string) []string {
 	return r.serviceCache
 }
 
+// ReportAndRemove 从redis 移除
+func (r RedisDiscovey) ReportAndRemove(serviceName string, ip string) {
+	r.conn.Do("srem", "namespace_"+serviceName, ip)
+	log.Println("find conn err, report and remove from redis ")
+}
+
 // getFromRedis 从redis 获取
 func (r *RedisDiscovey) getFromRedis(serviceName string) []string {
 	result, err := redis.Values(r.conn.Do("smembers", "namespace_"+serviceName))
 
 	if err != nil {
-		fmt.Println("服务注册失败")
+		log.Println("服务注册失败")
 		return nil
 	}
 	ret := []string{}

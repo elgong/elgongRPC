@@ -4,6 +4,9 @@
 package discovey
 
 import (
+	"log"
+
+	"github.com/elgong/elgongRPC/common"
 	"github.com/elgong/elgongRPC/config"
 	. "github.com/elgong/elgongRPC/plugin_centre"
 )
@@ -26,4 +29,10 @@ func (d *DefaultDiscovey) Get(serviceName string) []string {
 	}
 	// 返回空
 	return []string{"127.0.0.1:8999"}
+}
+
+// ReportAndRemove 删除不能用的地址，有点暴力，未来在加重试吧
+func (d *DefaultDiscovey) ReportAndRemove(serviceName string, delete string) {
+	log.Println("find conn err, report and remove ... ")
+	common.StringRemove(d.services2Ip[serviceName], delete)
 }
