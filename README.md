@@ -26,19 +26,19 @@
 
   - **实现思路**：同种类型插件实现类型共同的接口，把自己注册到插件管理中心的map容器中， 调用时使用接口来统一断言调用；
   - 支持自定义**服务发现插件**：可以通过实现`Discovey`接口来自定义
-    - 已实现基于配置文件的服务发现插件
-    - 已实现基于Redis 注册中心的服务发现插件
+    - 已实现基于配置文件的服务发现插件 [code](https://github.com/elgong/elgongRPC/blob/master/soa/discovey/default_discovey.go)
+    - 已实现基于Redis 注册中心的服务发现插件 [code](https://github.com/elgong/elgongRPC/tree/master/soa/register/redisPlugin)
   - 支持自定义**服务注册插件**：可以通过实现`Register`接口来自定义
-    - 已实现基于配置文件的服务发现插件
-    - 已实现基于Redis 注册中心的服务发现插件
+    - 已实现基于配置文件的服务注册插件   [code](https://github.com/elgong/elgongRPC/tree/master/soa/register/redisPlugin)
+    - 已实现基于Redis 注册中心的服务发现插件  [code](https://github.com/elgong/elgongRPC/tree/master/soa/register/redisPlugin)
   - 支持自定义**编解码插件****，可以通过实现 `codec`接口来增加自定义的编解码
-    - 已实现基于`gob` 的编解码插件
-    - 已实现基于`msgpack`的编解码插件
+    - 已实现基于`gob` 的编解码插件 [code](https://github.com/elgong/elgongRPC/blob/master/codec/codec_gob.go)
+    - 已实现基于`msgpack`的编解码插件 [code](https://github.com/elgong/elgongRPC/blob/master/codec/codec_msgpack.go)
   - 支持自定义**protocol协议插件**，可以通过实现 `protocol` 接口来增加
-    - 已提供默认插件
+    - 已提供默认插件 [code](https://github.com/elgong/elgongRPC/blob/master/protocol/default_protocol.go)
   - 支持自定义**连接池插件**，可以通过实现 `pool` 接口来实现增加
-    - 已提供默认插件
-  - 支持**其他插件**的自定义
+    - 已提供默认插件 [code](https://github.com/elgong/elgongRPC/blob/master/conn_pool/default_connPool.go)
+  - 支持**其他插件**的自定义 ...
 
 - **提供基于Redis的服务注册与服务发现**
 
